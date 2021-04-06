@@ -7,24 +7,29 @@ const productSchema = new Schema(
         type: String,
         // required:true
       },
-      indian: [{
+      indians: [{
         type: Schema.Types.ObjectId,
         ref: 'Indian'
   
       }],
-      italian: [{
+      italians: [{
         type: Schema.Types.ObjectId,
         ref: 'Italian'
   
       }],
-      desert: [{
+      deserts: [{
         type: Schema.Types.ObjectId,
         ref: 'Desert'
   
       }],
-      chinese: [{
+      chineses: [{
         type: Schema.Types.ObjectId,
         ref: 'Chinese'
+  
+      }],
+      southindians: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Southindian'
   
       }],
       

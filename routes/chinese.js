@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const Chinese = require('../models/chinese');
 const Product = require('../models/menu');
-const Subcategory = require('../models/subcategorypost');
 const path = require('path');
 const fs = require('fs');
 
@@ -10,19 +10,19 @@ router.get('/menues',(req, res, next) => {
     const CurrentPage = req.query.page || 1;
     const perPage = 10;
     let totalItems;
-    Product.find()
+    Chinese.find()
       .countDocuments()
       .then(count => {
         totalItems = count;
-        return Product.find()
+        return Chinese.find()
           .skip((CurrentPage - 1) * perPage)
           .limit(perPage)
       })
-      .then(products => {
+      .then(chineses => {
         res.status(200)
           .json({
             message: 'Fetched menu Successfully',
-            products: products,
+            chineses: chineses,
             totalItems: totalItems
           });
       })
@@ -40,18 +40,30 @@ router.post('/create',  (req, res, next) => {
     const description = req.body.description;
     const imageUrl = req.file.path;
     const price = req.body.price;
-    const product = new Product({
+    const chinese = new Chinese({
       name: name,
       imageUrl: `http://localhost:8020/${imageUrl}`,
-      subcategory : Subcategory._id,
+      product : Product._id,
 
       description: description,
       price:price,    
     })
+    Product.findOne({product:req.body.product})
+    .then(product=>{
+    if(!product){
+      const error = new Error("product not found")
+      throw error;
+    }
+    chinese.save();
+    loadedProduct = product
+    product.chineses.push(chinese);
+    return product.save();
+    
+  }) 
     .then(result => {
       res.status(201).json({      
         message: 'Item created successfully!',
-        product: product,
+        chinese: chinese,
         
       });
     })
@@ -66,16 +78,16 @@ router.post('/create',  (req, res, next) => {
 
 
 
-router.get('/get/:productId',(req, res, next) => {
-    const productId = req.params.productId;
-    Product.findById(productId)
-      .then(product => {
-        if (!product) {
-          const error = new Error('Could not find product.');
+router.get('/get/:chineseId',(req, res, next) => {
+    const chineseId = req.params.chineseId;
+    Chinese.findById(chineseId)
+      .then(chinese => {
+        if (!chinese) {
+          const error = new Error('Could not find chinese.');
           error.statusCode = 404;
           throw error;
         }
-        res.status(200).json({ message: 'Product fetched.', product: product });
+        res.status(200).json({ message: 'chinese fetched.', chinese: chinese });
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -85,8 +97,8 @@ router.get('/get/:productId',(req, res, next) => {
       });
   });
 
-router.put('/update/:productId',(req, res, next) => {
-    const productId = req.params.productId;
+router.put('/update/:chineseId',(req, res, next) => {
+    const chineseId = req.params.chineseId;
     const title = req.body.title;
     const content = req.body.content;
     let imageUrl = req.body.image;
@@ -98,23 +110,23 @@ router.put('/update/:productId',(req, res, next) => {
       error.statusCode = 422;
       throw error;
     }
-    Product.findById(productId)
-      .then(product => {
-        if (!product) {
-          const error = new Error('Could not find product.');
+    Chinese.findById(chineseId)
+      .then(chinese => {
+        if (!chinese) {
+          const error = new Error('Could not find chinese.');
           error.statusCode = 404;
           throw error;
         }
-        if (imageUrl !== product.imageUrl) {
-          clearImage(product.imageUrl);
+        if (imageUrl !== chinese.imageUrl) {
+          clearImage(chinese.imageUrl);
         }
-        product.title = title;
-        product.imageUrl = `http://localhost:8020/${imageUrl}`;
-        product.content = content;
-        return product.save();
+        chinese.title = title;
+        chinese.imageUrl = `http://localhost:8020/${imageUrl}`;
+        chinese.content = content;
+        return chinese.save();
       })
       .then(result => {
-        res.status(200).json({ message: 'Product updated!', post: result });
+        res.status(200).json({ message: 'chinese updated!', post: result });
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -124,31 +136,31 @@ router.put('/update/:productId',(req, res, next) => {
       });
   });
 
-router.delete('/delete/:productId', (req, res, next) => {
-    const productId = req.params.productId;
-    let loadedSubcategory
+router.delete('/delete/:chineseId', (req, res, next) => {
+    const chineseId = req.params.chineseId;
+    let loadedProduct
 
-    Product.findById(productId)
-      .then(product => {
-        if (!product) {
-          const error = new Error('Could not find product.');
+    Chinese.findById(chineseId)
+      .then(chinese => {
+        if (!chinese) {
+          const error = new Error('Could not find chinese.');
           error.statusCode = 404;
           throw error;
         }
-        clearImage(product.imageUrl);
-        return Product.findByIdAndDelete(productId);
+        clearImage(chinese.imageUrl);
+        return Chinese.findByIdAndDelete(chineseId);
       })
-      return Subcategory.findOne(req.params.subcategoryId)
+      return Product.findOne(req.params.productId)
       
-      .then(subcategory=>{    
-        loadedSubcategory = subcategory
-        subcategory.products.pull(productId); 
-        Product.findByIdAndDelete(productId);
-        return subcategory.save();
+      .then(product=>{    
+        loadedProduct = product
+        product.chineses.pull(chineseId); 
+        Chinese.findByIdAndDelete(chineseId);
+        return product.save();
       }) 
       .then(result => {
         console.log(result);
-        res.status(200).json({ message: 'Product deleted!!' })
+        res.status(200).json({ message: 'chinese deleted!!' })
       })
       .catch(err => {
         if (!err.statusCode) {
