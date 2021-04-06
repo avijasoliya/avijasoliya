@@ -49,19 +49,8 @@ router.post('/create',  (req, res, next) => {
 
       description: description,
       price:price,    
-    });
-    Subcategory.findOne({subcategoryName:req.body.subcategoryName})
-    .then(subcategory=>{
-    if(!subcategory){
-      const error = new Error("subcategory not found")
-      throw error;
-    }
-    italian.save();
-    loadedsubcategory = subcategory
-    subcategory.italians.push(italian);
-    return subcategory.save();
-    
-  }) 
+    })
+   
     
     .then(result => {
       res.status(201).json({      

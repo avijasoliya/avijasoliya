@@ -43,24 +43,15 @@ router.post('/create',  (req, res, next) => {
     let loadedSubcategory;
     const product = new Product({
       name: name,
-      imageUrl: `http://localhost:8080/${imageUrl}`,
+      imageUrl: `http://localhost:8020/${imageUrl}`,
       subcategory : Subcategory._id,
 
       description: description,
       price:price,    
-    });
-    Subcategory.findOne({subcategoryName:req.body.subcategoryName})
-    .then(subcategory=>{
-    if(!subcategory){
-      const error = new Error("subcategory not found")
-      throw error;
-    }
-    product.save();
-    loadedsubcategory = subcategory
-    subcategory.products.push(product);
-    return subcategory.save();
+    })
     
-  }) 
+    
+
     
     .then(result => {
       res.status(201).json({      
@@ -121,7 +112,7 @@ router.put('/update/:productId',(req, res, next) => {
           clearImage(product.imageUrl);
         }
         product.title = title;
-        product.imageUrl = imageUrl;
+        product.imageUrl = `http://localhost:8020/${imageUrl}`;
         product.content = content;
         return product.save();
       })
