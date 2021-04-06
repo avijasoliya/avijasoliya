@@ -21,7 +21,7 @@ router.get('/menues',(req, res, next) => {
       .then(chineses => {
         res.status(200)
           .json({
-            message: 'Fetched menu Successfully',
+            message: 'Fetched chinese Successfully',
             chineses: chineses,
             totalItems: totalItems
           });
