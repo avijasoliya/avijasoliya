@@ -7,11 +7,12 @@ const productSchema = new Schema(
         type: String,
         // required:true
       },
-      products: [{
+      indian: [{
         type: Schema.Types.ObjectId,
-        ref: 'Product'
+        ref: 'Indian'
   
       }],
+      
     name: {
       type: String,
       required: true
