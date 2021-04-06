@@ -7,6 +7,11 @@ const productSchema = new Schema(
         type: String,
         // required:true
       },
+      products: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Product'
+  
+      }],
     name: {
       type: String,
       required: true
