@@ -5,7 +5,7 @@ const subcategorySchema = new Schema(
   {
     categoryName: {
       type: String,
-      // required:true
+      required:true
     },
     products: [{
       type: Schema.Types.ObjectId,
@@ -21,11 +21,11 @@ const subcategorySchema = new Schema(
       type: String,
       required: true
     },
-    
-  category:[{
-    type:Schema.Types.ObjectId,
-    ref:'Category'
-  }]
+      
+    category:[{
+      type:Schema.Types.ObjectId,
+      ref:'Category'
+    }]
   },
   { timestamps: true }
 );

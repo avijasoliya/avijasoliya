@@ -22,7 +22,7 @@ var ItemSchema = new Schema({
 });
 
 
-const OrderScema = new Schema({
+const OrderSchema = new Schema({
   user: {
     name: {
       type: String,
@@ -54,7 +54,7 @@ const OrderScema = new Schema({
 });
 
 
-OrderScema.statics = {
+OrderSchema.statics = {
   get (id) {
     return this.findById(id)
       .exec()
@@ -80,4 +80,4 @@ OrderScema.statics = {
       .exec();
   }
 };
-module.exports = mongoose.model('Order', OrderScema);
+module.exports = mongoose.model('Order', OrderSchema);

@@ -95,6 +95,8 @@ router.get('/subcategory/:subcategoryId',(req, res, next) => {
       });
   });
 
+
+  
 router.put('/update/:subcategoryId',(req, res, next) => {
     const subcategoryId = req.params.subcategoryId;
     const subcategoryName = req.body.subcategoryName;

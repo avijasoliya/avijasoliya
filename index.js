@@ -17,6 +17,13 @@ const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/order');
 const cartRoutes = require('./routes/cart');
 const bookRoutes = require('./routes/book');
+const feedbackRoutes = require('./routes/feedback');
+const indianRoutes = require('./routes/indian');
+const italianRoutes = require('./routes/italian');
+const southindianRoutes = require('./routes/southindian');
+const dessertRoutes = require('./routes/dessert');
+const chineseRoutes = require('./routes/chinese');
+
 const app = express();
 
 
@@ -69,6 +76,13 @@ app.use('/menu',menuRoutes);
 app.use('/order',orderRoutes)
 app.use('/cart',cartRoutes);
 app.use('/book',bookRoutes);
+app.use('/feedback',feedbackRoutes);
+app.use('/indian',indianRoutes);
+app.use('/italian',italianRoutes);
+app.use('/southindian',southindianRoutes);
+app.use('/chinese',chineseRoutes);
+app.use('/dessert',dessertRoutes);
+
 
 mongoose.connect('mongodb+srv://nodejs:Avi12345@cluster0.tt0km.mongodb.net/myProject?retryWrites=true&w=majority',{ useNewUrlParser: true , useUnifiedTopology: true })
 .then(result =>{

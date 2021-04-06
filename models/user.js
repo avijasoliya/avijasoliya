@@ -39,10 +39,10 @@ const userSchema = new Schema({
         }],
         resetToken:String,
         resetTokenExpiration:Date,
-    feedback:{
+    feedbacks:[{
         type: Schema.Types.ObjectId,
-        ref : 'Feedback'
-    }
+        ref : 'FeedBack'
+    }]
 },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }});
 
 

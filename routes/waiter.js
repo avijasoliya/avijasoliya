@@ -231,4 +231,56 @@ router.post('/waiterresetP',(req, res, next) => {
       })
 })
   
+  
+router.get('/getwaiters',(req, res, next) => {
+  const CurrentPage = req.query.page || 1;
+  const perPage = 10;
+  let totalItems;
+  Waiter.find()
+    .countDocuments()
+    .then(count => {
+      totalItems = count;
+      return Waiter.find()
+        .skip((CurrentPage - 1) * perPage)
+        .limit(perPage)
+    })
+    .then(waiters => {
+      res.status(200)
+        .json({
+          message: 'Fetched waiters Successfully',
+          waiters: waiters,
+          totalItems: totalItems
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+
+});
+
+
+
+router.get('/getwaiter/:waiterId',(req, res, next) => {
+  const waiterId = req.params.waiterId;
+  Waiter.findById(waiterId)
+    .then(waiter => {
+      if (!waiter) {
+        const error = new Error('Could not find waiter.');
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({ message: 'waiter Found!.', waiter: waiter });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
+
+
 module.exports = router;

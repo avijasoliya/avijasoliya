@@ -230,4 +230,57 @@ router.post('/cookresetP',(req, res, next) => {
       })
 })
   
+  
+router.get('/getcook',(req, res, next) => {
+  const CurrentPage = req.query.page || 1;
+  const perPage = 10;
+  let totalItems;
+  Cook.find()
+    .countDocuments()
+    .then(count => {
+      totalItems = count;
+      return Cook.find()
+        .skip((CurrentPage - 1) * perPage)
+        .limit(perPage)
+    })
+    .then(cooks => {
+      res.status(200)
+        .json({
+          message: 'Fetched Cooks Successfully',
+          cooks: cooks,
+          totalItems: totalItems
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+
+});
+
+
+
+router.get('/getcook/:cookId',(req, res, next) => {
+  const cookId = req.params.cookId;
+  Cook.findById(cookId)
+    .then(cook => {
+      if (!cook) {
+        const error = new Error('Could not find cook.');
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({ message: 'Cook Found!.', cook: cook });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
+
+
+
 module.exports = router;
