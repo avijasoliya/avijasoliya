@@ -52,7 +52,7 @@ router.post('/create',  (req, res, next) => {
     Subcategory.findOne({subcategoryName:req.body.subcategoryName})
     .then(subcategory=>{
     if(!subcategory){
-      const error = new Error("subcategory not found")
+      const error = new Error("chinese not found")
       throw error;
     }
     chinese.save();
