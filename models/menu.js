@@ -12,6 +12,22 @@ const productSchema = new Schema(
         ref: 'Indian'
   
       }],
+      italian: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Italian'
+  
+      }],
+      desert: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Desert'
+  
+      }],
+      chinese: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Chinese'
+  
+      }],
+      
       
     name: {
       type: String,
