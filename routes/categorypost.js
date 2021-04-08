@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/categorypost');
-const subcategory = require('../models/subcategorypost')
 const path = require('path');
 const fs = require('fs');
-const category = require('../models/categorypost')
-const subcategorypost = require('../models/subcategorypost');
 
 
 router.get('/categories',(req, res, next) => {
@@ -44,7 +41,7 @@ router.post('/create', (req, res, next) => {
     let creator;
     const category = new Category({
       categoryName: categoryName,
-      imageUrl: `http://192.168.0.63:8020/${imageUrl}`,
+      imageUrl: `http://192.168.0.125:8020/${imageUrl}`,
       creator: {name:'Manager'}
     });
     category
@@ -108,7 +105,7 @@ router.put('/update/:categoryId',(req, res, next) => {
           clearImage(category.imageUrl);
         }
         category.categoryName = categoryName;
-        category.imageUrl = `http://192.168.0.63:8020/${imageUrl}`;
+        category.imageUrl = `http://192.168.0.125:8020/${imageUrl}`;
         return category.save();
       })
       .then(result => {

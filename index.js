@@ -12,17 +12,16 @@ const managerRoutes = require('./routes/manager');
 const cookRoutes = require('./routes/cook');
 const waiterRoutes = require('./routes/waiter');
 const categoryRoutes = require('./routes/categorypost');
-const subcategoryRoutes = require('./routes/subcategorypost');
+const mincategoryRoutes = require('./routes/mincategory');
 const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/order');
 const cartRoutes = require('./routes/cart');
 const bookRoutes = require('./routes/book');
 const feedbackRoutes = require('./routes/feedback');
-const indianRoutes = require('./routes/indian');
-const italianRoutes = require('./routes/italian');
-const southindianRoutes = require('./routes/southindian');
-const dessertRoutes = require('./routes/dessert');
-const chineseRoutes = require('./routes/chinese');
+
+// const paymentRoutes = require('./routes/payment');
+
+
 
 const app = express();
 
@@ -71,17 +70,14 @@ app.use('/manager', managerRoutes);
 app.use('/cook',cookRoutes);
 app.use('/waiter',waiterRoutes);
 app.use('/categorypost',categoryRoutes);
-app.use('/subcategorypost',subcategoryRoutes);
+app.use('/mincategory',mincategoryRoutes);
 app.use('/menu',menuRoutes);
 app.use('/order',orderRoutes)
 app.use('/cart',cartRoutes);
 app.use('/book',bookRoutes);
 app.use('/feedback',feedbackRoutes);
-app.use('/indian',indianRoutes);
-app.use('/italian',italianRoutes);
-app.use('/southindian',southindianRoutes);
-app.use('/chinese',chineseRoutes);
-app.use('/dessert',dessertRoutes);
+// app.use('/payment',paymentRoutes);
+
 
 
 mongoose.connect('mongodb+srv://nodejs:Avi12345@cluster0.tt0km.mongodb.net/myProject?retryWrites=true&w=majority',{ useNewUrlParser: true , useUnifiedTopology: true })

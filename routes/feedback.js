@@ -15,6 +15,11 @@ router.post('/feedback/:userId',(req,res,next)=>{
            error.statusCode = 401;
            throw error;
        }
+       else if(rating>=5 || rating <1){
+        const error = new Error('enter belove 5 and above 1 ');
+        error.statusCode = 401;
+        throw error;
+       }
        const feedback = new FeedBack({
            rating : rating,
            title: title,
@@ -85,6 +90,22 @@ router.get('/feedbacks',(req, res, next) => {
       });
   });
 
+  router.get('/average', (req, res) => {
+    FeedBack.aggregate([
+    {
+      $group: {
+        _id: "$userId",
+        avgrating: {
+          $avg: "$rating"
+        }
+      }
+    }
+  ])
+    .then(results => {
+        res.send({ rating: results[0].avgrating });
+    })
+    .catch(error => console.error(error))
+});
 
 
 module.exports = router;

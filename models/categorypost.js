@@ -9,7 +9,7 @@ const categorySchema = new Schema(
       required:true,
       unique:true
     },
-    subcategories: [{
+    mincategories: [{
       type: Schema.Types.ObjectId,
       ref: 'Subcategory'
     }],

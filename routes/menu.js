@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/menu');
-const Subcategory = require('../models/subcategorypost');
+const Mincategory = require('../models/mincategory');
 const path = require('path');
 const fs = require('fs');
 
@@ -38,16 +38,29 @@ router.get('/menues',(req, res, next) => {
 router.post('/create',  (req, res, next) => {
     const name = req.body.name;
     const description = req.body.description;
+    const mincategoryName = req.body.mincategoryName;
     const imageUrl = req.file.path;
+    let loadedMincategory;
     const price = req.body.price;
     const product = new Product({
       name: name,
       imageUrl: `http://localhost:8020/${imageUrl}`,
-      subcategory : Subcategory._id,
-
+      mincategory : Mincategory._id,
       description: description,
       price:price,    
+    })    
+    Mincategory.findOne({mincategoryName})
+    .then(mincategory=>{
+      if(!mincategory){
+        const error = new Error("mincategory not found");
+      }
+      product.save()
+
+      loadedMincategory = mincategory
+      mincategory.products.push(product)
+      return mincategory.save();
     })
+  
     .then(result => {
       res.status(201).json({      
         message: 'Item created successfully!',
