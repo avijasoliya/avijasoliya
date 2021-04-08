@@ -11,7 +11,7 @@ router.get('/subcategories',(req, res, next) => {
     let totalItems;
     Mincategory.find()
       .countDocuments()
-      .then(count => {
+       .then(count => {
         totalItems = count;
         return Mincategory.find()
           .skip((CurrentPage - 1) * perPage)
@@ -38,9 +38,12 @@ router.post('/create',(req, res, next) => {
     const mincategoryName = req.body.mincategoryName;
     const imageUrl = req.file.path;
     const categoryName = req.body.categoryName;
+    const categoryId = req.params.categoryId
     const mincategory = new Mincategory({
       mincategoryName: mincategoryName,
-      imageUrl: `http://localhost:8080/${imageUrl}`,
+
+      imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+      categoryName:categoryName,
       category : Category._id,
     })
     Category.findOne({categoryName})
@@ -54,11 +57,12 @@ router.post('/create',(req, res, next) => {
       category.mincategories.push(mincategory)
       return category.save();
     })
-  
+    
     .then(result => {
       res.status(201).json({      
         message: 'mincategory created successfully!',
-        mincategory: mincategory      
+        mincategory: mincategory,
+        categoryId:categoryId      
       });
     })
       .catch(err => {
@@ -116,7 +120,7 @@ router.put('/update/:mincategoryId',(req, res, next) => {
           clearImage(mincategory.imageUrl);
         }
         mincategory.mincategoryName = mincategoryName;
-        mincategory.imageUrl =`http://192.168.0.63:8020/${imageUrl}`;
+        mincategory.imageUrl =`http://192.168.0.61:8020/${imageUrl}`;
         return mincategory.save();
       })
       .then(result => {
@@ -164,6 +168,27 @@ router.delete('/delete/:mincategoryId',async(req, res, next) => {
       });
     }
   );
+
+
+  router.get('/mincategories/name', async (req, res, next)=> {
+    const categoryName = req.body.categoryName;
+    Mincategory.find({categoryName:categoryName})
+    .then(mincategories=>{
+      if (!mincategory) {
+        const error = new Error('Could not find mincategory.');
+        error.statusCode = 404;
+        throw error;
+      }
+      return res.status(200).json({
+        message: 'Fetched product Successfully',
+        mincategories: mincategories,
+        
+        
+      })
+    })
+    
+})
+
 
 const clearImage = filePath => {
   filePath = path.join(__dirname, '..', filePath);

@@ -47,6 +47,7 @@ router.post('/create',  (req, res, next) => {
       imageUrl: `http://localhost:8020/${imageUrl}`,
       mincategory : Mincategory._id,
       description: description,
+      mincategoryName:mincategoryName,
       price:price,    
     })    
     Mincategory.findOne({mincategoryName})
@@ -170,6 +171,27 @@ router.delete('/delete/:productId', (req, res, next) => {
         next(err);
       });
   });
+
+  router.get('/menu/name', async (req, res, next)=> {
+    const mincategoryName = req.body.mincategoryName;
+    Product.find({mincategoryName:mincategoryName})
+    .then(name=>{
+      if(!name) {
+        const error = new Error('Could not find mincategory.');
+        error.statusCode = 404;
+        throw error;
+      }
+      return res.status(200).json({
+        message: 'Fetched mincategory Successfully',
+        products: name,
+        
+        
+      })
+    })
+    
+})
+
+
 
 const clearImage = filePath => {
   filePath = path.join(__dirname, '..', filePath);

@@ -5,7 +5,7 @@ const mincategorySchema = new Schema(
   {
     categoryName: {
       type: String,
-    //   required:true
+      // required:true
     },
     products: [{
       type: Schema.Types.ObjectId,
@@ -20,7 +20,7 @@ const mincategorySchema = new Schema(
       required: true
     },
     category:{
-      type:String,
+      type:Schema.Types.ObjectId,
       ref:'Category'
     }
   },
