@@ -11,7 +11,7 @@ const categorySchema = new Schema(
     },
     mincategories: [{
       type: Schema.Types.ObjectId,
-      ref: 'Subcategory'
+      ref: 'Mincategory'
     }],
     imageUrl: {
       type: String,

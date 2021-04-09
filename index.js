@@ -18,12 +18,16 @@ const orderRoutes = require('./routes/order');
 const cartRoutes = require('./routes/cart');
 const bookRoutes = require('./routes/book');
 const feedbackRoutes = require('./routes/feedback');
+const qrRoutes = require('./routes/qrcode');
+
 
 // const paymentRoutes = require('./routes/payment');
 
 
 
 const app = express();
+
+app.set('view engine','ejs');
 
 
 const fileStorage = multer.diskStorage({
@@ -34,6 +38,17 @@ const fileStorage = multer.diskStorage({
       return cb (null,`${file.fieldname}_${Date.now()}${file.originalname}`)
     }
   });
+
+
+
+  // const qrStorage = multer.diskStorage({
+  //   destination: (req, file, cb) => {
+  //     cb(null, 'qrcode');
+  //   },
+  //   filename: (req, file, cb) => {
+  //     return cb (null,`${file.fieldname}_${Date.now()}${file.originalname}`)
+  //   }
+  // });
 
   const fileFilter = (req, file, cb) => {
     if (
@@ -55,6 +70,13 @@ app.use(
     multer({ storage: fileStorage, fileFilter: fileFilter }).single('imageUrl'));
   app.use('/images', express.static(path.join(__dirname, 'images')));
   
+
+  // app.use(
+  //   multer({ storage: qrStorage, fileFilter: fileFilter }).single('generateQR'));
+  // app.use('/qrcode', express.static(path.join(__dirname, 'qrcode')));
+  
+
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -76,6 +98,8 @@ app.use('/order',orderRoutes)
 app.use('/cart',cartRoutes);
 app.use('/book',bookRoutes);
 app.use('/feedback',feedbackRoutes);
+app.use('/qrcode',qrRoutes);
+
 // app.use('/payment',paymentRoutes);
 
 

@@ -3,6 +3,7 @@ const Mincategory = require('../models/mincategory');
 const Category = require('../models/categorypost')
 const path = require('path');
 const fs = require('fs');
+const mincategory = require('../models/mincategory');
 const router = express.Router();
 
 router.get('/subcategories',(req, res, next) => {
@@ -34,27 +35,27 @@ router.get('/subcategories',(req, res, next) => {
   
   });
 
-router.post('/create',(req, res, next) => {
+router.post('/create/:categoryId',(req, res, next) => {
     const mincategoryName = req.body.mincategoryName;
-    const imageUrl = req.file.path;
+    const imageUrl = req.file.  path;
     const categoryName = req.body.categoryName;
-    const categoryId = req.params.categoryId
+    const categoryId = req.params.categoryId;
+    let loadedCategory
     const mincategory = new Mincategory({
       mincategoryName: mincategoryName,
-
       imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
-      categoryName:categoryName,
+      categoryId:categoryId, 
       category : Category._id,
     })
-    Category.findOne({categoryName})
+    Category.findOne({categoryId:req.params.categoryId})
     .then(category=>{
-      if(!category){
-        const error = new Error("category not found");
+      if(!categoryId){
+        const error = new Error("category not found")
+        throw error;
       }
       mincategory.save()
-
-      loadedCategory = category
-      category.mincategories.push(mincategory)
+      category = loadedCategory
+      loadedCategory.mincategories.push(mincategory)
       return category.save();
     })
     
@@ -170,10 +171,10 @@ router.delete('/delete/:mincategoryId',async(req, res, next) => {
   );
 
 
-  router.get('/mincategories/name', async (req, res, next)=> {
-    const categoryName = req.body.categoryName;
-    Mincategory.find({categoryName:categoryName})
-    .then(mincategories=>{
+  router.get('/mincategories/:categoryId', async (req, res, next)=> {
+    const categoryId = req.params.categoryId;
+    Mincategory.find({categoryId:categoryId})
+    .then(mincategory=>{
       if (!mincategory) {
         const error = new Error('Could not find mincategory.');
         error.statusCode = 404;
@@ -181,7 +182,7 @@ router.delete('/delete/:mincategoryId',async(req, res, next) => {
       }
       return res.status(200).json({
         message: 'Fetched product Successfully',
-        mincategories: mincategories,
+        mincategory: mincategory,
         
         
       })

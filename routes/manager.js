@@ -84,11 +84,13 @@ router.put('/managersignup',[
     const name = req.body.name;
     const phone = req.body.phone;
     const password = req.body.password;
+    var sha512 = crypto.createHash('sha512').update(password).digest('hex').toString();
 
     const manager = new Manager({
     email: email,
     phone:phone,
-    password:password,
+    password:sha512,
+    
     name: name,
     });
     return manager.save()
@@ -170,7 +172,7 @@ router.put('/managerforgotP' , (req, res, next) => {
                   subject: 'Forgot Password!!!',
                   html: ` <p>Your OTP  ${otp}</p>
               <p>For password reset click</p>      
-              <a href = http://localhost:8020/home/reset/ here>here</a></p>`
+              <a href = http://localhost:8020/home/resetP/ here>here</a></p>`
               })
           }
               ot.save();

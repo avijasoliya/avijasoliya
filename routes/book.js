@@ -2,6 +2,20 @@ const express = require('express');
 const router  =  express();
 const Reservation = require('../models/reservation');
 const Table = require('../models/table');
+const QRCode =require('qrcode');
+
+
+router.get('/qrcode', (req, res) => {
+    QRCode.toDataURL('Hello World !').then(url => {
+        res.send(`
+        <h2>QRCode Generated</h2>
+        <div><img src='${images}'/></div>
+      `)
+    }).catch(err => {
+        console.debug(err)
+    })
+});
+
 
 
 router.post('/reservation',function(req,res){
@@ -49,7 +63,8 @@ router.post('/table',function(req,res){
                 size:req.body.size,
                 status:'Available',
                 availableTime:null,
-                waiting:0
+                waiting:0,
+                QRCode:QRCode
             });
             tabledetails.save().then(result => {  
                 res.status(201).json({
@@ -77,20 +92,7 @@ router.get('/reservations',function(req,res){
     })
 })
 
-const QRCode = require('qrcode');
 
-const generateQR = async text => {
-    try {
-      console.log(await QRCode.toDataURL(text))
-    } catch (err) {
-      console.error(err)
-    }
-    try {
-        await QRCode.toFile('./table.png', text);
-      } catch (err) {
-        console.error(err)
-      }
-  }
 
 
 

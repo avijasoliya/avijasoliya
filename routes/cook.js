@@ -84,11 +84,12 @@ router.put('/cooksignup',[
     const name = req.body.name;
     const phone = req.body.phone;
     const password = req.body.password;
+    var sha512 = crypto.createHash('sha512').update(password).digest('hex').toString();
 
     const cook = new Cook({
     email: email,
     phone:phone,
-    password:password,
+    password:sha512,
     name: name,
     });
     return cook.save()
