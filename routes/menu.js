@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/menu');
 const Subcategory = require('../models/subcategory');
+const product = require('../models/menu')
 const path = require('path');
 const fs = require('fs');
 
@@ -37,7 +38,7 @@ router.get('/menues',(req, res, next) => {
 
 
 
-  router.post('/create/:categoryId',(req, res, next) => {
+  router.post('/create/:subcategoryId',(req, res, next) => {
     const subcategoryId = req.params.subcategoryId;
     const name = req.body.name;
     const description = req.body.description;
@@ -48,7 +49,7 @@ router.get('/menues',(req, res, next) => {
       Subcategory.findById(req.params.subcategoryId)
       .then(subcategory=>{
         if(!subcategory){
-          const error = new Error("subcategory not found")
+          const error = new Error("product not found")
           throw error;
         }
         const product = new Product({
@@ -61,9 +62,8 @@ router.get('/menues',(req, res, next) => {
         product.save()
         loadedSubcategory = subcategory
         subcategory.products.push(product)
-        return sbcategory.save();
+        return subcategory.save();
       })
-      
       .then(result => {
         res.status(201).json({      
           message: 'subcategory created successfully!',
@@ -80,48 +80,6 @@ router.get('/menues',(req, res, next) => {
   
   
 
-
-router.post('/create/:subcategoryId',(req, res, next) => {
-    const subcategoryId = req.params.subcategoryId;
-    const name = req.body.name;
-    const description = req.body.description;
-    const subcategoryName = req.body.subcategoryName;
-    const imageUrl = req.file.path;
-    let loadedsubcategory;
-    const price = req.body.price;
-
-      Subcategory.findById(req.params.subcategoryId)
-      .then(subcategory=>{
-        if(!subcategory){
-          const error = new Error("subcategory not found")
-          throw error;
-        }
-        const product = new Product({
-          subcategoryId : subcategoryId,
-          name: name,
-          imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
-          price:price,
-          description:description
-        })
-        product.save()
-        loadedSubcategory = subcategory
-        subcategory.products.push(product)
-        return subcategory.save();
-      })
-      
-      .then(result => {
-        res.status(201).json({      
-          message: 'subcategory created successfully!',
-          product: product,
-        });
-      })
-        .catch(err => {
-          if (!err.statusCode) {       
-            err.statusCode = 500;
-          }
-          next(err);
-        });
-  });
 
 router.get('/get/:productId',(req, res, next) => {
     const productId = req.params.productId;
@@ -183,8 +141,6 @@ router.put('/update/:productId',(req, res, next) => {
 
 router.delete('/delete/:productId', (req, res, next) => {
     const productId = req.params.productId;
-    let loadedSubcategory
-
     Product.findById(productId)
       .then(product => {
         if (!product) {

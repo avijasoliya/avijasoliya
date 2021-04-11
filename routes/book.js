@@ -5,18 +5,6 @@ const Table = require('../models/table');
 const QRCode =require('qrcode');
 
 
-router.get('/qrcode', (req, res) => {
-    QRCode.toDataURL('Hello World !').then(url => {
-        res.send(`
-        <h2>QRCode Generated</h2>
-        <div><img src='${images}'/></div>
-      `)
-    }).catch(err => {
-        console.debug(err)
-    })
-});
-
-
 
 router.post('/reservation',function(req,res){
     Reservation.findOne({phone:req.body.phone}).then(result=>{
@@ -51,6 +39,7 @@ router.post('/reservation',function(req,res){
 });
 
 
+router.set("view engine","ejs");
 
 router.post('/table',function(req,res){
     Table.find({table:req.body.table}).then(result => {
@@ -64,13 +53,22 @@ router.post('/table',function(req,res){
                 status:'Available',
                 availableTime:null,
                 waiting:0,
-                QRCode:QRCode
             });
-            tabledetails.save().then(result => {  
+            tabledetails.save().then(result => {
+                const table =  JSON.stringify(tabledetails)
+ 
+                const qr = QRCode.toString(table, function (err, code) {
+                    if(err) return console.log("error occurred")
+                    res.send(code);
+                    console.log(code)
+                })
                 res.status(201).json({
                     message:"created successfully",
-                    createdProduct:tabledetails
+                    createdProduct:tabledetails,
+                    qr:qr
                 });
+                
+                res.render("qr");
             }).catch(err => {
                 res.status(500).json({error:err});
             })

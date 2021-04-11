@@ -7,7 +7,7 @@ const tableSchema = new Schema({
     size:{type:Number,required:true},
     status:{type:String},
     availableTime:Date,
-    generateQR:String
+    QRCode:{type:String}
 });
 
 module.exports = mongoose.model('Table',tableSchema);

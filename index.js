@@ -19,16 +19,10 @@ const cartRoutes = require('./routes/cart');
 const bookRoutes = require('./routes/book');
 const feedbackRoutes = require('./routes/feedback');
 const qrRoutes = require('./routes/qrcode');
-
-
-// const paymentRoutes = require('./routes/payment');
-
+//  const paymentRoutes = require('./routes/payment');
 
 
 const app = express();
-
-app.set('view engine','ejs');
-
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
