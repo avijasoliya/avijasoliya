@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/menu');
-const Mincategory = require('../models/mincategory');
+const Subcategory = require('../models/subcategory');
 const path = require('path');
 const fs = require('fs');
 
@@ -35,50 +35,93 @@ router.get('/menues',(req, res, next) => {
   
   });
 
-router.post('/create',  (req, res, next) => {
+
+
+  router.post('/create/:categoryId',(req, res, next) => {
+    const subcategoryId = req.params.subcategoryId;
     const name = req.body.name;
     const description = req.body.description;
-    const mincategoryName = req.body.mincategoryName;
     const imageUrl = req.file.path;
-    let loadedMincategory;
+    let loadedsubcategory;
     const price = req.body.price;
-    const product = new Product({
-      name: name,
-      imageUrl: `http://localhost:8020/${imageUrl}`,
-      mincategory : Mincategory._id,
-      description: description,
-      mincategoryName:mincategoryName,
-      price:price,    
-    })    
-    Mincategory.findOne({mincategoryName})
-    .then(mincategory=>{
-      if(!mincategory){
-        const error = new Error("mincategory not found");
-      }
-      product.save()
-
-      loadedMincategory = mincategory
-      mincategory.products.push(product)
-      return mincategory.save();
-    })
-  
-    .then(result => {
-      res.status(201).json({      
-        message: 'Item created successfully!',
-        product: product,
-        
-      });
-    })
-      .catch(err => {
-        if (!err.statusCode) {       
-          err.statusCode = 500;
+      
+      Subcategory.findById(req.params.subcategoryId)
+      .then(subcategory=>{
+        if(!subcategory){
+          const error = new Error("subcategory not found")
+          throw error;
         }
-        next(err);
-      });
+        const product = new Product({
+          subcategoryId : subcategoryId,
+          name:name,
+          description:description,
+          price:price,
+          imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+        })
+        product.save()
+        loadedSubcategory = subcategory
+        subcategory.products.push(product)
+        return sbcategory.save();
+      })
+      
+      .then(result => {
+        res.status(201).json({      
+          message: 'subcategory created successfully!',
+          product: product,
+        });
+      })
+        .catch(err => {
+          if (!err.statusCode) {       
+            err.statusCode = 500;
+          }
+          next(err);
+        });
+    });
   
+  
+
+
+router.post('/create/:subcategoryId',(req, res, next) => {
+    const subcategoryId = req.params.subcategoryId;
+    const name = req.body.name;
+    const description = req.body.description;
+    const subcategoryName = req.body.subcategoryName;
+    const imageUrl = req.file.path;
+    let loadedsubcategory;
+    const price = req.body.price;
+
+      Subcategory.findById(req.params.subcategoryId)
+      .then(subcategory=>{
+        if(!subcategory){
+          const error = new Error("subcategory not found")
+          throw error;
+        }
+        const product = new Product({
+          subcategoryId : subcategoryId,
+          name: name,
+          imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+          price:price,
+          description:description
+        })
+        product.save()
+        loadedSubcategory = subcategory
+        subcategory.products.push(product)
+        return subcategory.save();
+      })
+      
+      .then(result => {
+        res.status(201).json({      
+          message: 'subcategory created successfully!',
+          product: product,
+        });
+      })
+        .catch(err => {
+          if (!err.statusCode) {       
+            err.statusCode = 500;
+          }
+          next(err);
+        });
   });
-
-
 
 router.get('/get/:productId',(req, res, next) => {
     const productId = req.params.productId;
@@ -172,17 +215,17 @@ router.delete('/delete/:productId', (req, res, next) => {
       });
   });
 
-  router.get('/menu/name', async (req, res, next)=> {
-    const mincategoryName = req.body.mincategoryName;
-    Product.find({mincategoryName:mincategoryName})
+router.get('/menu/name', async (req, res, next)=> {
+  const subcategoryName = req.body.subcategoryName;
+    Product.find({subcategoryName:subcategoryName})
     .then(name=>{
       if(!name) {
-        const error = new Error('Could not find mincategory.');
+        const error = new Error('Could not find subcategory.');
         error.statusCode = 404;
         throw error;
       }
       return res.status(200).json({
-        message: 'Fetched mincategory Successfully',
+        message: 'Fetched subcategory Successfully',
         products: name,
         
         
@@ -191,6 +234,29 @@ router.delete('/delete/:productId', (req, res, next) => {
     
 })
 
+
+  router.get('/menu/:subcategoryId', async (req, res, next)=> {
+    const subcategoryId = req.params.subcategoryId;
+    const name = req.params.name;
+    let loadedProduct;
+    loadedProduct = subcategoryId;
+    Product.find({subcategoryId})
+    .then(product => {
+      if (!product) {
+        const error = new Error('Could not find subcategory.');
+        error.statusCode = 404;
+        throw error;
+      }
+      // console.log(subcategory)
+      res.status(200).json({ message: 'Subcategory fetched.', product: product  });
+    })    
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });    
+})
 
 
 const clearImage = filePath => {

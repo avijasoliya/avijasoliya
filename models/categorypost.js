@@ -9,9 +9,10 @@ const categorySchema = new Schema(
       required:true,
       unique:true
     },
-    mincategories: [{
+    
+    subcategories: [{
       type: Schema.Types.ObjectId,
-      ref: 'Mincategory'
+      ref: 'Subcategory'
     }],
     imageUrl: {
       type: String,

@@ -12,7 +12,7 @@ const managerRoutes = require('./routes/manager');
 const cookRoutes = require('./routes/cook');
 const waiterRoutes = require('./routes/waiter');
 const categoryRoutes = require('./routes/categorypost');
-const mincategoryRoutes = require('./routes/mincategory');
+const subcategoryRoutes = require('./routes/subcategory');
 const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/order');
 const cartRoutes = require('./routes/cart');
@@ -92,7 +92,7 @@ app.use('/manager', managerRoutes);
 app.use('/cook',cookRoutes);
 app.use('/waiter',waiterRoutes);
 app.use('/categorypost',categoryRoutes);
-app.use('/mincategory',mincategoryRoutes);
+app.use('/subcategory',subcategoryRoutes);
 app.use('/menu',menuRoutes);
 app.use('/order',orderRoutes)
 app.use('/cart',cartRoutes);

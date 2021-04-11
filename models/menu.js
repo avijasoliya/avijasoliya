@@ -3,7 +3,12 @@ const Schema = mongoose.Schema;
 
 const productSchema = new Schema(
   {
-    mincategoryName: {
+    subcategoryId: {
+      type:Schema.Types.ObjectId,
+      required:true,
+      ref:'Subcategory'
+    },
+    subcategoryName: {
         type: String,
         // required:true
     },
@@ -28,9 +33,9 @@ const productSchema = new Schema(
       type: Object,
       // required: String
     },
-    mincategory:[{
+    subcategory:[{
         type:Schema.Types.ObjectId,
-        ref:'Mincategory'
+        ref:'Subcategory'
       }]
   },
   { timestamps: true }

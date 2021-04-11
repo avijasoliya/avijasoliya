@@ -109,7 +109,7 @@ const phone = req.body.phone;
 const password = req.body.password;
 let loadedUser;
 
-User.findOne({$or: [{email: email},{ phone: phone}]})
+User.findOne({email})
 .then(user => {
   if (!user) {
     const error = new Error('A user with this email or phone no. not found .');

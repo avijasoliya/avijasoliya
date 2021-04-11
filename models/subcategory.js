@@ -1,17 +1,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const mincategorySchema = new Schema(
+const subcategorySchema = new Schema(
   {
-    categoryName: {
-      type: String,
-      // required:true
+    categoryId: {
+      type:Schema.Types.ObjectId,
+      required:true,
+      ref:'Category'
     },
     products: [{
       type: Schema.Types.ObjectId,
       ref: 'Product'
     }],
-    mincategoryName: {
+    subcategoryName: {
       type: String,
       required:true
     },
@@ -27,4 +28,4 @@ const mincategorySchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Mincategory', mincategorySchema);
+module.exports = mongoose.model('Subcategory', subcategorySchema);
