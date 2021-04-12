@@ -2,8 +2,7 @@ const express = require('express');
 const router  =  express();
 const Reservation = require('../models/reservation');
 const Table = require('../models/table');
-const QRCode =require('qrcode');
-
+const QRCode = require('qr-image');
 
 
 router.post('/reservation',function(req,res){
@@ -21,7 +20,7 @@ router.post('/reservation',function(req,res){
             .then(result => { 
                 res.status(201).json({
                     message:"created successfully",
-                    createdProduct:reservation,
+                    createdTable:reservation,
                     phone:req.body.phone,
                     name:req.body.name
                 });
@@ -54,20 +53,23 @@ router.post('/table',function(req,res){
                 availableTime:null,
                 waiting:0,
             });
-            tabledetails.save().then(result => {
-                const table =  JSON.stringify(tabledetails)
- 
-                const qr = QRCode.toString(table, function (err, code) {
-                    if(err) return console.log("error occurred")
-                    res.send(code);
-                    console.log(code)
-                })
+            tabledetails.save()
+            .then(result => {
+                const tablec =  JSON.stringify(tabledetails)
+                
+                const qrpng = QRCode.image(tablec, { type: 'png',ec_level: 'H', size: 10, margin: 0  });
+                const table = req.body.table;
+                const qrimage = qrpng.pipe(require('fs').createWriteStream('./qrcode/'+`${table}`+ '.png'));
+                
+                const png_string = QRCode.imageSync(tablec, { type: 'png' });
+                
                 res.status(201).json({
                     message:"created successfully",
-                    createdProduct:tabledetails,
-                    qr:qr
-                });
-                
+                    createdTable:tabledetails,
+                    QRCode:'http://localhost:8020/qrcode/'+`${table}`+ '.png'
+                }); 
+                tabledetails.QRCode = 'http://localhost:8020/qrcode/'+`${table}`+ '.png'
+                tabledetails.save();
                 res.render("qr");
             }).catch(err => {
                 res.status(500).json({error:err});
@@ -76,7 +78,29 @@ router.post('/table',function(req,res){
     })
 });
 
-      
+
+router.delete('/delete/:tableId', (req, res, next) => {
+    const tableId = req.params.tableId;
+    Table.findById(tableId)
+      .then(table => {
+        if (!table) {
+          const error = new Error('Could not find table.');
+          error.statusCode = 404;
+          throw error;
+        }
+        return Table.findByIdAndDelete(tableId);
+      })
+      .then(result => {
+        console.log(result);
+        res.status(200).json({ message: 'Table deleted!!' })
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });     
 
 router.get('/reservations',function(req,res){
     Reservation.find({Status:{'$ne':'Finished'}}).sort({requestedtime:1}).then(result =>{
@@ -89,8 +113,6 @@ router.get('/reservations',function(req,res){
     }).catch(err =>{
     })
 })
-
-
 
 
 

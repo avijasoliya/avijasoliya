@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
-
+const qrpath = require('path')
 
 const homeRoutes = require('./routes/home');
 const postRoutes = require('./routes/post');
@@ -34,16 +34,6 @@ const fileStorage = multer.diskStorage({
   });
 
 
-
-  // const qrStorage = multer.diskStorage({
-  //   destination: (req, file, cb) => {
-  //     cb(null, 'qrcode');
-  //   },
-  //   filename: (req, file, cb) => {
-  //     return cb (null,`${file.fieldname}_${Date.now()}${file.originalname}`)
-  //   }
-  // });
-
   const fileFilter = (req, file, cb) => {
     if (
       file.mimetype === 'image/png' ||
@@ -61,14 +51,15 @@ const fileStorage = multer.diskStorage({
 
 app.use(bodyParser.json()); 
 app.use(
-    multer({ storage: fileStorage, fileFilter: fileFilter }).single('imageUrl'));
-  app.use('/images', express.static(path.join(__dirname, 'images')));
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('imageUrl'));
+app.use('/images', express.static(path.join(__dirname, 'images')));
   
 
-  // app.use(
-  //   multer({ storage: qrStorage, fileFilter: fileFilter }).single('generateQR'));
-  // app.use('/qrcode', express.static(path.join(__dirname, 'qrcode')));
-  
+
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('QRCode'));
+app.use('/qrcode', express.static(qrpath.join(__dirname, 'qrcode')));
+
 
 
 app.use(bodyParser.urlencoded({ extended: true }));

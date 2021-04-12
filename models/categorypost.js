@@ -10,9 +10,9 @@ const categorySchema = new Schema(
       unique:true
     },
     
-    subcategories: [{
+    products: [{
       type: Schema.Types.ObjectId,
-      ref: 'Subcategory'
+      ref: 'Product'
     }],
     imageUrl: {
       type: String,

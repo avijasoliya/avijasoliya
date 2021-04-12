@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/menu');
-const Subcategory = require('../models/subcategory');
+const Category = require('../models/categorypost');
 const product = require('../models/menu')
 const path = require('path');
 const fs = require('fs');
@@ -38,35 +38,35 @@ router.get('/menues',(req, res, next) => {
 
 
 
-  router.post('/create/:subcategoryId',(req, res, next) => {
-    const subcategoryId = req.params.subcategoryId;
+  router.post('/create/:categoryId',(req, res, next) => {
+    const categoryId = req.params.categoryId;
     const name = req.body.name;
     const description = req.body.description;
     const imageUrl = req.file.path;
-    let loadedsubcategory;
+    let loadedcategory;
     const price = req.body.price;
       
-      Subcategory.findById(req.params.subcategoryId)
-      .then(subcategory=>{
-        if(!subcategory){
+      Category.findById(req.params.categoryId)
+      .then(category=>{
+        if(!category){
           const error = new Error("product not found")
           throw error;
         }
         const product = new Product({
-          subcategoryId : subcategoryId,
+          categoryId : categoryId,
           name:name,
           description:description,
           price:price,
           imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
         })
         product.save()
-        loadedSubcategory = subcategory
-        subcategory.products.push(product)
-        return subcategory.save();
+        loadedCategory = category
+        category.products.push(product)
+        return category.save();
       })
       .then(result => {
         res.status(201).json({      
-          message: 'subcategory created successfully!',
+          message: 'category created successfully!',
           product: product,
         });
       })
@@ -104,7 +104,7 @@ router.put('/update/:productId',(req, res, next) => {
     const productId = req.params.productId;
     const title = req.body.title;
     const content = req.body.content;
-    let imageUrl = req.body.image;
+    let imageUrl = req.body.imageUrl;
     if (req.file) {
       imageUrl = req.file.path;
     }
@@ -151,13 +151,13 @@ router.delete('/delete/:productId', (req, res, next) => {
         clearImage(product.imageUrl);
         return Product.findByIdAndDelete(productId);
       })
-      return Subcategory.findOne(req.params.subcategoryId)
+      return Category.findOne(req.params.categoryId)
       
-      .then(subcategory=>{    
-        loadedSubcategory = subcategory
-        subcategory.products.pull(productId); 
+      .then(category=>{    
+        loadedCategory = category
+        category.products.pull(productId); 
         Product.findByIdAndDelete(productId);
-        return subcategory.save();
+        return category.save();
       }) 
       .then(result => {
         console.log(result);
@@ -172,16 +172,16 @@ router.delete('/delete/:productId', (req, res, next) => {
   });
 
 router.get('/menu/name', async (req, res, next)=> {
-  const subcategoryName = req.body.subcategoryName;
-    Product.find({subcategoryName:subcategoryName})
+  const categoryName = req.body.categoryName;
+    Product.find({categoryName:categoryName})
     .then(name=>{
       if(!name) {
-        const error = new Error('Could not find subcategory.');
+        const error = new Error('Could not find category.');
         error.statusCode = 404;
         throw error;
       }
       return res.status(200).json({
-        message: 'Fetched subcategory Successfully',
+        message: 'Fetched category Successfully',
         products: name,
         
         
@@ -191,20 +191,20 @@ router.get('/menu/name', async (req, res, next)=> {
 })
 
 
-  router.get('/menu/:subcategoryId', async (req, res, next)=> {
-    const subcategoryId = req.params.subcategoryId;
+  router.get('/menu/:categoryId', async (req, res, next)=> {
+    const categoryId = req.params.categoryId;
     const name = req.params.name;
     let loadedProduct;
-    loadedProduct = subcategoryId;
-    Product.find({subcategoryId})
+    loadedProduct = categoryId;
+    Product.find({categoryId})
     .then(product => {
       if (!product) {
-        const error = new Error('Could not find subcategory.');
+        const error = new Error('Could not find category.');
         error.statusCode = 404;
         throw error;
       }
-      // console.log(subcategory)
-      res.status(200).json({ message: 'Subcategory fetched.', product: product  });
+      // console.log(category)
+      res.status(200).json({ message: 'Category fetched.', product: product  });
     })    
       .catch(err => {
         if (!err.statusCode) {
