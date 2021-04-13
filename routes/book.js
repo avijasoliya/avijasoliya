@@ -3,7 +3,9 @@ const router  =  express();
 const Reservation = require('../models/reservation');
 const Table = require('../models/table');
 const QRCode = require('qr-image');
-
+var Jimp = require("jimp");
+var fs = require('fs')
+var qrCode = require('qrcode-reader');
 
 router.post('/reservation',function(req,res){
     Reservation.findOne({phone:req.body.phone}).then(result=>{
@@ -59,16 +61,16 @@ router.post('/table',function(req,res){
                 
                 const qrpng = QRCode.image(tablec, { type: 'png',ec_level: 'H', size: 10, margin: 0  });
                 const table = req.body.table;
-                const qrimage = qrpng.pipe(require('fs').createWriteStream('./qrcode/'+`${table}`+ '.png'));
+                qrpng.pipe(require('fs').createWriteStream('./images/'+`${table}`+ '.png'));
                 
                 const png_string = QRCode.imageSync(tablec, { type: 'png' });
                 
                 res.status(201).json({
                     message:"created successfully",
                     createdTable:tabledetails,
-                    QRCode:'http://localhost:8020/qrcode/'+`${table}`+ '.png'
+                    QRCode:'http://192.168.0.61:8020/images/'+`${table}`+ '.png'
                 }); 
-                tabledetails.QRCode = 'http://localhost:8020/qrcode/'+`${table}`+ '.png'
+                tabledetails.QRCode = `http://192.168.0.61:8020/images/`+`${table}`+`.png`
                 tabledetails.save();
                 res.render("qr");
             }).catch(err => {
@@ -102,6 +104,7 @@ router.delete('/delete/:tableId', (req, res, next) => {
       });
   });     
 
+
 router.get('/reservations',function(req,res){
     Reservation.find({Status:{'$ne':'Finished'}}).sort({requestedtime:1}).then(result =>{
         if (result.length == 0){
@@ -114,6 +117,25 @@ router.get('/reservations',function(req,res){
     })
 })
 
+
+// router.get('/scan',(req,res,next)=>{
+    
+    
+//     var buffer = fs.readFileSync(__dirname + '11.png');
+//     Jimp.read(buffer, function(err, image) {
+//         if (err) {
+//             console.error(err);
+//         }
+//         let QRCode = new qrCode();
+//         QRCode.callback = function(err, value) {
+//             if (err) {
+//                 console.error(err);
+//             }
+//             console.log(value.result);
+//         };
+//         QRCode.decode(image.bitmap);
+//     });
+// })
 
 
 module.exports = router;

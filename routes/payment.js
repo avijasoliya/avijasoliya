@@ -28,3 +28,18 @@ router.post('/orders', async (req, res) => {
         res.status(400).send('Unable to create order');
     }
 })
+
+var request = require('request');
+
+request({
+  method: 'POST',
+  url: 'https://rzp_test_oKRAilGLJWjSL9:jiwe5kUThoZeYVFLTboF0XH8@api.razorpay.com/v1/payments/pay_29QQoUBi66xm2f/capture',
+  form: {
+    amount: 1000,
+    currency: INR
+  }
+}, function (error, response, body) {
+  console.log('Status:', response.statusCode);
+  console.log('Headers:', JSON.stringify(response.headers));
+  console.log('Response:', body);
+});

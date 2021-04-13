@@ -3,7 +3,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const qrpath = require('path')
+const multer1 = require('multer');
+const fs = require('fs')
 
 const homeRoutes = require('./routes/home');
 const postRoutes = require('./routes/post');
@@ -20,9 +21,10 @@ const bookRoutes = require('./routes/book');
 const feedbackRoutes = require('./routes/feedback');
 const qrRoutes = require('./routes/qrcode');
 //  const paymentRoutes = require('./routes/payment');
-
+const allRoutes = require('./routes/all');
 
 const app = express();
+const app1 = express();
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -32,6 +34,7 @@ const fileStorage = multer.diskStorage({
       return cb (null,`${file.fieldname}_${Date.now()}${file.originalname}`)
     }
   });
+
 
 
   const fileFilter = (req, file, cb) => {
@@ -56,9 +59,9 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
   
 
 
-app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).single('QRCode'));
-app.use('/qrcode', express.static(qrpath.join(__dirname, 'qrcode')));
+// app1.use(
+//   multer1({ storage: fileStorage1 }).single('QRCode'));
+// app1.use('/images', express.static(path.join(__dirname, 'images')));
 
 
 
@@ -84,7 +87,7 @@ app.use('/cart',cartRoutes);
 app.use('/book',bookRoutes);
 app.use('/feedback',feedbackRoutes);
 app.use('/qrcode',qrRoutes);
-
+app.use('/all',allRoutes);
 // app.use('/payment',paymentRoutes);
 
 

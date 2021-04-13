@@ -6,19 +6,27 @@ var ItemSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
+  priority:{
+    type:Number,
+    // required:true
+  },
   qty: {
     type: Number,
     required: true,
     min: [1, 'Quantity can not be less then 1.']
   },
+  imageUrl: {
+    type: String,
+    required: true
+  },
   price: {
     type: Number,
             required: true,
         },
-  total: {
-      type: Number,
-      required: true,
-  }
+        total: {
+            type: Number,
+            required: true,
+        }
 });
 const CartSchema = new Schema({
   email: {
@@ -34,6 +42,7 @@ const CartSchema = new Schema({
             default: 0,
             type: Number
         }
+ 
 },{
         timestamps: true
     }
