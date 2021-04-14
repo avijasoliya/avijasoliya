@@ -34,7 +34,6 @@ router.get('/categories',(req, res, next) => {
   
   }); 
 
-// POST /feed/post
 router.post('/create', (req, res, next) => {
     const categoryName = req.body.categoryName;
     const imageUrl = req.file.path;

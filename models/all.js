@@ -41,10 +41,10 @@ const allSchema = new Schema({
         }],
         resetToken:String,
         resetTokenExpiration:Date,
-    feedback:{
-        type: Schema.Types.ObjectId,
-        ref : 'Feedback'
-    },
+        feedbacks:[{
+            type: Schema.Types.ObjectId,
+            ref : 'FeedBack'
+        }],
     cart:{
         items:[{
             productId:{

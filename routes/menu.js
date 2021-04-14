@@ -8,33 +8,33 @@ const fs = require('fs');
 
 
 router.get('/menues',(req, res, next) => {
-    const CurrentPage = req.query.page || 1;
-    const perPage = 10;
-    let totalItems;
-    Product.find()
-      .countDocuments()
-      .then(count => {
-        totalItems = count;
-        return Product.find()
-          .skip((CurrentPage - 1) * perPage)
-          .limit(perPage)
-      })
-      .then(products => {
-        res.status(200)
-          .json({
-            message: 'Fetched menu Successfully',
-            products: products,
-            totalItems: totalItems
-          });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  
-  });
+  const CurrentPage = req.query.page || 1;
+  const perPage = 10;
+  let totalItems;
+  Product.find()
+    .countDocuments()
+    .then(count => {
+      totalItems = count;
+      return Product.find()
+        .skip((CurrentPage - 1) * perPage)
+        .limit(perPage)
+    })
+    .then(products => {
+      res.status(200)
+        .json({
+          message: 'Fetched menu Successfully',
+          products: products,
+          totalItems: totalItems
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+
+});
 
 
 
@@ -66,8 +66,8 @@ router.get('/menues',(req, res, next) => {
       })
       .then(result => {
         res.status(201).json({      
-            message: 'category created successfully!',
-          product: product
+            message: 'Product created successfully!',
+            product: product
         });
       })
         .catch(err => {
@@ -76,100 +76,100 @@ router.get('/menues',(req, res, next) => {
           }
           next(err);
         });
-    });
+  });
   
   
 
 
 router.get('/get/:productId',(req, res, next) => {
-    const productId = req.params.productId;
-    Product.findById(productId)
-      .then(product => {
-        if (!product) {
-          const error = new Error('Could not find product.');
-          error.statusCode = 404;
-          throw error;
-        }
-        res.status(200).json({ message: 'Product fetched.', product: product });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  });
+  const productId = req.params.productId;
+  Product.findById(productId)
+    .then(product => {
+      if (!product) {
+        const error = new Error('Could not find product.');
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({ message: 'Product fetched.', product: product });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
 
 router.put('/update/:productId',(req, res, next) => {
-    const productId = req.params.productId;
-    const title = req.body.title;
-    const content = req.body.content;
-    let imageUrl = req.body.imageUrl;
-    if (req.file) {
-      imageUrl = req.file.path;
-    }
-    if (!imageUrl) {
-      const error = new Error('No file picked.');
-      error.statusCode = 422;
-      throw error;
-    }
-    Product.findById(productId)
-      .then(product => {
-        if (!product) {
-          const error = new Error('Could not find product.');
-          error.statusCode = 404;
-          throw error;
-        }
-        if (imageUrl !== product.imageUrl) {
-          clearImage(product.imageUrl);
-        }
-        product.title = title;
-        product.imageUrl = `http://localhost:8020/${imageUrl}`;
-        product.content = content;
-        return product.save();
-      })
-      .then(result => {
-        res.status(200).json({ message: 'Product updated!', post: result });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  });
-
-router.delete('/delete/:productId', (req, res, next) => {
-    const productId = req.params.productId;
-    Product.findById(productId)
-      .then(product => {
-        if (!product) {
-          const error = new Error('Could not find product.');
-          error.statusCode = 404;
-          throw error;
-        }
+  const productId = req.params.productId;
+  const name = req.body.name;
+  const description = req.body.description;
+  let imageUrl = req.body.imageUrl;
+  if (req.file) {
+    imageUrl = req.file.path;
+  }
+  if (!imageUrl) {
+    const error = new Error('No file picked.');
+    error.statusCode = 422;
+    throw error;
+  }
+  Product.findById(productId)
+    .then(product => {
+      if (!product) {
+        const error = new Error('Could not find product.');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (imageUrl !== product.imageUrl) {
         clearImage(product.imageUrl);
-        return Product.findByIdAndDelete(productId);
-      })
-      return Category.findOne(req.params.categoryId)
-      
-      .then(category=>{    
-        loadedCategory = category
-        category.products.pull(productId); 
-        Product.findByIdAndDelete(productId);
-        return category.save();
-      }) 
-      .then(result => {
-        console.log(result);
-        res.status(200).json({ message: 'Product deleted!!' })
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  });
+      }
+      product.name = name;
+      product.imageUrl = `http://localhost:8080/${imageUrl}`;
+      product.description = description;
+      return product.save();
+    })
+    .then(result => {
+      res.status(200).json({ message: 'Product updated!', post: result });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
+
+router.delete('/delete/:productId',  (req, res, next) => {
+  const productId = req.params.productId;
+  Product.findById(productId)
+    .then(product => {
+      if (!product) {
+        const error = new Error('Could not find product.');
+        error.statusCode = 404;
+        throw error;
+      }
+      clearImage(product.imageUrl);
+      return Product.findByIdAndDelete(productId);
+    })
+    return Category.findOne(req.params.categoryId)
+    
+    .then(category=>{    
+      loadedCategory = category
+      category.products.pull(productId); 
+      Product.findByIdAndDelete(productId);
+      return category.save();
+    }) 
+    .then(result => {
+      console.log(result);
+      res.status(200).json({ message: 'Product deleted!!' })
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
 
 router.get('/menu/name', async (req, res, next)=> {
   const categoryName = req.body.categoryName;
@@ -191,30 +191,72 @@ router.get('/menu/name', async (req, res, next)=> {
 })
 
 
-  router.get('/menu/:categoryId', async (req, res, next)=> {
+  router.get('/menu/:categoryId', (req, res, next)=> {
     const categoryId = req.params.categoryId;
-    const name = req.params.name;
     let loadedProduct;
-    loadedProduct = categoryId;
+  
     Product.find({categoryId})
     .then(product => {
-      if (!product) {
-        const error = new Error('Could not find category.');
-        error.statusCode = 404;
-        throw error;
+      console.log(product);
+      if (product) {
+        return res.status(200).json({ message: 'Here is your menu.', products: product });
+  
       }
-      // console.log(category)
-      res.status(200).json({ message: 'Category fetched.', product: product  });
-    })    
+      else if (product.availability == 'available'){
+        return res.status(200).json({ message: 'Here is your menu.', product: product });
+      }
+      
+      })    
       .catch(err => {
         if (!err.statusCode) {
           err.statusCode = 500;
         }
         next(err);
       });    
-})
+  })
 
 
+  router.put('/available/:productId',(req,res,next) =>{
+    const productId = req.params.productId;
+    Product.findById(productId)
+      .then(product=>{
+        if(!product){
+          return res.status(404).json({message:'There are no such product'});
+        }
+        product.availability = 'available';
+        product.save();
+        return res.status(200).json({message:'Product is now available'});
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  })
+
+  router.put('/unavailable/:productId', (req,res,next) =>{
+    const productId = req.params.productId;
+    Product.findById(productId)
+      .then(product=>{
+        if(!product){
+          return res.status(404).json({message:'There are no such products'});
+        }
+        else {product.availability = "unavailable";
+        // console.log(product.availability);
+        product.save();
+        return res.status(200).json({message:"Product is unavailable for the moment can you choose another one", product:product})
+      }})
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  
+  })
+
+  
 const clearImage = filePath => {
   filePath = path.join(__dirname, '..', filePath);
   fs.unlink(filePath, err => console.log(err));

@@ -2,20 +2,21 @@ const express = require('express');
 const router = express.Router();
 const FeedBack = require('../models/feedback');
 const User = require('../models/user');
+const auth = require('../middleware/is-auth');
 
-router.post('/feedback/:userId',(req,res,next)=>{
+router.post('/feedback',auth.auth,(req,res,next)=>{
     const rating = req.body.rating;
-    const user = req.params.user;
     const title = req.body.title;
+    const user = req.params.user;
     const message = req.body.message;
     User.findOne({ user:user })
     .then(user => {
-       if (!user) {
-           const error = new Error('An user with this id could not be found');
-           error.statusCode = 401;
-           throw error;
-       }
-       else if(rating>=5 || rating <1){
+      //  if (!user) {
+      //      const error = new Error('An user with this id could not be found');
+      //      error.statusCode = 401;
+      //      throw error;
+      //  }
+       if(rating>=5 || rating <1){
         const error = new Error('enter belove 5 and above 1 ');
         error.statusCode = 401;
         throw error;

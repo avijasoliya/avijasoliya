@@ -6,6 +6,7 @@ var ItemSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
+  
   qty: {
     type: Number,
     required: true,
@@ -15,42 +16,60 @@ var ItemSchema = new Schema({
     type: Number,
             required: true,
         },
-  total: { 
-      type: Number,
-      required: true,
-  }
+        total: {
+            type: Number,
+            required: true,
+        }
 });
-
+const CartSchema = new Schema({
+  email: {
+    type: String,
+    required: true,
+    match: [
+      /[\w]+?@[\w]+?\.[a-z]{2,4}/,
+      'The value of path {PATH} ({VALUE}) is not a valid email address.'
+    ]
+  },
+  items: [ItemSchema],
+  subTotal: {
+            default: 0,
+            type: Number
+        }
+},{
+        timestamps: true
+    }
+);
 
 const OrderSchema = new Schema({
-  user: {
+
     name: {
       type: String,
       required: true
     },
     email: {
       type: String,
-      required: true,
+    //   required: true,
       match: [
         /[\w]+?@[\w]+?\.[a-z]{2,4}/,
         'The value of path {PATH} ({VALUE}) is not a valid email address.'
       ]
-    }
-  },
+    },
+    complaints: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Complaint'
+    }],
   paymentMethod: {
     type: String,
     default: 'cash_on_delivery'
   },
-  grandTotal: {
-    type: Number,
-    required: true,
-    min: [0, 'Price can not be less then 0.']
+  order: [CartSchema],
+  OrderIs:{
+    type:String
   },
-  items: [ItemSchema],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  OrderHas:{
+    type:String
+  },
+
 });
 
 
@@ -68,16 +87,9 @@ OrderSchema.statics = {
         );
         return Promise.reject(err);
       });
-  },
+  }
+}
 
   
-  list ({ email, sort = 'createdAt', skip = 0, limit = 50 } = {}) {
-    let condition = { 'user.email': email };
-    return this.find(condition)
-      .sort({ [sort]: -1 })
-      .skip(+skip)
-      .limit(+limit)
-      .exec();
-  }
-};
+
 module.exports = mongoose.model('Order', OrderSchema);

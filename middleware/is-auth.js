@@ -3,10 +3,8 @@ const express = require('express');
 
 exports.auth = (req,res,next)=>{
     let token = req.headers['authorization'];
-
   try { 
-    token = token.split(' ')[1];  
-    
+    token = token.split(' ')[1];     
     if(!token){
         const error = new Error('Token is not found ')
         error.statusCode  = 404;
@@ -15,6 +13,14 @@ exports.auth = (req,res,next)=>{
     jwt.verify(token , 'somesupersecretaccesstoken',(err,user)=>{
         if(!err){
             req.user = user;
+            email = user.email;
+            id = user.Id;
+            phone = user.phone;
+            // console.log(email);
+            // user.email = email;
+            // console.log(email);
+            // req.userId = user.id;
+            // req.userEmail = user.email;
             next();
         }
         else{

@@ -20,8 +20,9 @@ const cartRoutes = require('./routes/cart');
 const bookRoutes = require('./routes/book');
 const feedbackRoutes = require('./routes/feedback');
 const qrRoutes = require('./routes/qrcode');
-//  const paymentRoutes = require('./routes/payment');
+// const paymentRoutes = require('./routes/payment');
 const allRoutes = require('./routes/all');
+const complaintRoutes = require('./routes/complaint');
 
 const app = express();
 const app1 = express();
@@ -88,6 +89,7 @@ app.use('/book',bookRoutes);
 app.use('/feedback',feedbackRoutes);
 app.use('/qrcode',qrRoutes);
 app.use('/all',allRoutes);
+app.use('/complaint',complaintRoutes)
 // app.use('/payment',paymentRoutes);
 
 

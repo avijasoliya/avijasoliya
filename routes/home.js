@@ -31,7 +31,7 @@ router.post("/renewaccessToken",(req,res)=>{
   }
   jwt.verify(refreshToken,"somerefreshtoken",(err,user)=>{
     if(!err){
-      const accessToken= jwt.sign({email:user.email,userId: user._id},'someaccesstoken',{expiresIn:'200s'});
+      const accessToken= jwt.sign({email:user.email,userId: user._id},'someaccesstoken',{expiresIn:'2000s'});
       return res.status(201).json({accessToken})
     }
     else{

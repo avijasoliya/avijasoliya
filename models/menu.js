@@ -24,6 +24,10 @@ const productSchema = new Schema(
       type:Number,
       required:true
     },
+    availability:{
+      type:Boolean,
+      default:true
+    },
     description: {
       type: String,
       required: true
