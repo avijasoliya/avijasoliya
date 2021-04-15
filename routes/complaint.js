@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Complaint = require('../models/complaint');
 const Order = require('../models/order');
+const auth = require('../middleware/is-auth');
 
 
 
-router.post('/complaint/:orderId',(req,res,next)=>{
+router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
     const orderId = req.params.orderId;
     const order = req.params.order;
     const title = req.body.title;
@@ -20,7 +21,8 @@ router.post('/complaint/:orderId',(req,res,next)=>{
        
        const complaint = new Complaint({
            title: title,
-           message: message
+           message: message,
+           orderId:orderId
        })
        complaint.save();
        order.complaints.push(complaint);
@@ -84,6 +86,36 @@ router.get('/complaints',(req, res, next) => {
         }
         next(err);
       });
+  });
+
+
+  router.get('/complaints',auth.auth,(req, res, next) => {
+    const CurrentPage = req.query.page || 1;
+    const perPage = 10;
+    let totalItems;
+    Complaint.find()
+      .countDocuments()
+      .then(count => {
+        totalItems = count;
+        return Complaint.find()
+          .skip((CurrentPage - 1) * perPage)
+          .limit(perPage)
+      })
+      .then(complaints => {
+        res.status(200)
+          .json({
+            message: 'Fetched complaint Successfully',
+            complaints: complaints,
+            totalItems: totalItems
+          });
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  
   });
 
 //   router.get('/average', (req, res) => {

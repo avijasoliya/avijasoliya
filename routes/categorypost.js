@@ -7,7 +7,7 @@ const fs = require('fs');
 
 router.get('/categories',(req, res, next) => {
     const CurrentPage = req.query.page || 1;
-    const perPage = 10;
+    const perPage = 100;
     let totalItems;
     Category.find()
       .countDocuments()

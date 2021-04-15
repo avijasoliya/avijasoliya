@@ -11,12 +11,12 @@ router.post('/feedback',auth.auth,(req,res,next)=>{
     const message = req.body.message;
     User.findOne({ user:user })
     .then(user => {
-      //  if (!user) {
-      //      const error = new Error('An user with this id could not be found');
-      //      error.statusCode = 401;
-      //      throw error;
-      //  }
-       if(rating>=5 || rating <1){
+       if (!user) {
+           const error = new Error('An user with this id could not be found');
+           error.statusCode = 401;
+           throw error;
+       }
+       if(rating>5 || rating <1){
         const error = new Error('enter belove 5 and above 1 ');
         error.statusCode = 401;
         throw error;

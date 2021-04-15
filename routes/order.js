@@ -22,6 +22,7 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
           return res.json({message:'could not find cart'});
       }
       loadedCart = cart;
+      subTotal= cart.subTotal;
       return Order.findOne({email})
     })
     .then(order=>{
@@ -30,6 +31,7 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
           name : name,
           paymentMethod: paymentMethod,
           email:email,
+          subTotal : subTotal,
           order: loadedCart            
       })
       order.save()
@@ -205,5 +207,8 @@ router.delete('/delete',(req, res, next) => {
       next(err);
     });
 });
+
+
+
 
 module.exports = router;

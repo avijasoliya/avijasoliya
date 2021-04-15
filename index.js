@@ -20,7 +20,7 @@ const cartRoutes = require('./routes/cart');
 const bookRoutes = require('./routes/book');
 const feedbackRoutes = require('./routes/feedback');
 const qrRoutes = require('./routes/qrcode');
-// const paymentRoutes = require('./routes/payment');
+const revenueRoutes = require('./routes/revenue');
 const allRoutes = require('./routes/all');
 const complaintRoutes = require('./routes/complaint');
 
@@ -91,6 +91,7 @@ app.use('/qrcode',qrRoutes);
 app.use('/all',allRoutes);
 app.use('/complaint',complaintRoutes)
 // app.use('/payment',paymentRoutes);
+app.use('/revenue',revenueRoutes)
 
 
 

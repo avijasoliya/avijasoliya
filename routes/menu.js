@@ -9,7 +9,7 @@ const fs = require('fs');
 
 router.get('/menues',(req, res, next) => {
   const CurrentPage = req.query.page || 1;
-  const perPage = 10;
+  const perPage = 100;
   let totalItems;
   Product.find()
     .countDocuments()

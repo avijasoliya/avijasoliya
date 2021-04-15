@@ -2,13 +2,16 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 var ItemSchema = new Schema({
+  product_id:{
+    type:String
+  },
   productId: {
     type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
   priority:{
     type:Number,
-    // required:true
+    required:true
   },
   qty: {
     type: Number,
@@ -17,7 +20,7 @@ var ItemSchema = new Schema({
   },
   imageUrl: {
     type: String,
-    required: true
+    // required: true
   },
   price: {
     type: Number,

@@ -41,7 +41,10 @@ const CartSchema = new Schema({
 );
 
 const OrderSchema = new Schema({
-
+    subTotal:{
+      type:Number,
+      // ref:'Cart'
+    },
     name: {
       type: String,
       required: true
@@ -70,8 +73,9 @@ const OrderSchema = new Schema({
     type:String
   },
 
-});
-
+},{
+timestamps:true
+})
 
 OrderSchema.statics = {
   get (id) {
