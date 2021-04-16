@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const FeedBack = require('../models/feedback');
-const User = require('../models/user');
+const All = require('../models/all');
 const auth = require('../middleware/is-auth');
 
 router.post('/feedback',auth.auth,(req,res,next)=>{
     const rating = req.body.rating;
     const title = req.body.title;
-    const user = req.params.user;
+    const all = req.params.all;
     const message = req.body.message;
-    User.findOne({ user:user })
+    All.findOne({ user:all })
     .then(user => {
        if (!user) {
            const error = new Error('An user with this id could not be found');

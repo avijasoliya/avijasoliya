@@ -10,16 +10,17 @@ const auth = require('../middleware/is-auth');
 const router = express.Router();
 
 
-router.post('/addtocart/:product_id',auth.auth,function (req, res, next) {
+router.post('/addtocart/:productId',auth.auth,function (req, res, next)  {
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
-  const product_id = req.params.product_id;
-  const qty = Number.parseInt(req.body.qty);
+  const productId = req.params.productId;
   const priority = req.body.priority;
-  
+  const qty = Number.parseInt(req.body.qty);
   let productDetails;
+  // let image;
+  // console.log('qty: ', qty);
 
-  Product.findById(product_id).populate({
+  Product.findById(productId).populate({
     path: "items.productId",
     select: "name price description imageUrl "
   })
@@ -28,21 +29,33 @@ router.post('/addtocart/:product_id',auth.auth,function (req, res, next) {
         return res.status(404).json({ message: "Could not find post" });
       }
       Id = product._id;
-      // console.log(Id)
+      console.log(Id)
       productDetails = product.price;
       // image = product.imageUrl;
     })
-  Cart.findOne({ email })
-    .exec()
+
+All.findOne({email}).populate({
+  path: "items.productId",
+  select: "name price description imageUrl "
+})
+    .then(all=>{
+      if(!all){
+        return res.status(403).json({message:'Register yourself first,will ya?!'})
+      }
+      return Cart.findOne({ email }).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      })    
+    })
     .then(cart => {
       if (!cart && qty <= 0) {
         throw new Error('Invalid request');
       } else if (cart) {
         const indexFound = cart.items.findIndex(item => {
-          return item.product_id === product_id;
+          return item.product_id === productId;
         });
         if (indexFound !== -1 && qty <= 0) {
-          cart.items.splice(indexFound, 1)
+          cart.items.splice(indexFound, 1);
           if (cart.items.length == 0) {
             cart.subTotal = 0;
           } else {
@@ -55,12 +68,12 @@ router.post('/addtocart/:product_id',auth.auth,function (req, res, next) {
           cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
         } else if (qty > 0) {
           cart.items.push({
-            product_id: product_id,
+            productId :productId,
             qty: qty,
             priority:priority,
             price: productDetails,
             total: parseInt(productDetails * qty)
-          });
+          })
           cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
         } else {
           throw new Error('Invalid request');
@@ -68,29 +81,32 @@ router.post('/addtocart/:product_id',auth.auth,function (req, res, next) {
         return cart.save();
       } else {
         const cartData = {
-          email: email,
+          email: email,          
           items: [
             {
-              product_id: product_id,
+              productId : productId,
               qty: qty,
               priority: priority,
               price: productDetails,
               total: productDetails * qty,
-            }
-          ],
+
+            }],
           subTotal: parseInt(productDetails * qty)
         };
         cart = new Cart(cartData);
+        // return newItem
         return cart.save();
       }
     })
-    .then(savedCart => res.json(savedCart))
+    .then(savedCart => {
+      return res.json(savedCart)
+    })
     .catch(err => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
-    });
+    })
 });
 
 router.get('/getcart',auth.auth,(req, res, next) => {

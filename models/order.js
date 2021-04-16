@@ -63,7 +63,7 @@ const OrderSchema = new Schema({
     }],
   paymentMethod: {
     type: String,
-    default: 'cash_on_delivery'
+    default: 'cash'
   },
   order: [CartSchema],
   OrderIs:{

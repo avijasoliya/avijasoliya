@@ -66,6 +66,74 @@ function(err, result) {
 });
 
 
+router.get('/revenuedate', (req, res) => {
+  const dates= req.body.dates;
+  
+  Order.aggregate([
+  
+  {$project: {_id:1,date:{$dateToString: { format: "%Y-%m-%d", date: "$createdAt"}},subTotal:1}},
+  {$group : 
+    {_id:{date:"$date"}, sum:{$sum:"$subTotal"}}
+  },
+  {$match : {"_id.date" : dates    }}
+],
+function(err, result) {
+  if (err) {
+    res.send(err);
+  } else {
+    res.json(result);
+  }
+})
+.catch(error => console.error(error))
+});
+
+
+
+router.get('/revenuemonth', (req, res) => {
+  const dates= req.body.dates;
+  Order.aggregate([
+  {$project: {_id:1,date:{$dateToString: { format: "%Y-%m", date: "$createdAt"}},subTotal:1}},
+  {$group : 
+    {_id:{date:"$date"}, sum:{$sum:"$subTotal"}}
+  },
+  {$match : {"_id.date" : dates    }}
+],
+function(err, result) {
+  if (err) {
+    res.send(err);
+  } else {
+    res.json(result);
+  }
+})
+.catch(error => console.error(error))
+});
+
+
+
+
+router.get('/revenueyear', (req, res) => {
+  const years= req.body.years;
+  
+  Order.aggregate([
+  
+  {$project: {_id:1,date:{$dateToString: { format: "%Y", date: "$createdAt"}},subTotal:1}},
+  {$group : 
+    {_id:{date:"$date"}, sum:{$sum:"$subTotal"}}
+  },
+  {$match : {"_id.date" : years    }}
+],
+function(err, result) {
+  if (err) {
+    res.send(err);
+  } else {
+    res.json(result);
+  }
+})
+.catch(error => console.error(error))
+});
+
+
+
 
 router.get('/sum', (req, res) => {
     Order.aggregate([

@@ -11,14 +11,14 @@ router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
     const order = req.params.order;
     const title = req.body.title;
     const message = req.body.message;
-    Order.findOne({ order:order })
+    Order.findById(orderId)
     .then(order => {
        if (!orderId) {
            const error = new Error('An order with this id could not be found');
            error.statusCode = 401;
            throw error;
        }
-       
+       console.log(order)
        const complaint = new Complaint({
            title: title,
            message: message,

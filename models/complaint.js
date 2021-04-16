@@ -3,7 +3,7 @@ const Schema  = mongoose.Schema;
 
 const complaintSchema = new Schema(
     {
-        order: {
+        orderId: {
             type: Schema.Types.ObjectId,
             ref: 'Order'
         },

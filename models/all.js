@@ -39,12 +39,12 @@ const allSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref:'Post'
         }],
-        resetToken:String,
-        resetTokenExpiration:Date,
-        feedbacks:[{
-            type: Schema.Types.ObjectId,
-            ref : 'FeedBack'
-        }],
+    resetToken:String,
+    resetTokenExpiration:Date,
+    feedbacks:[{
+        type: Schema.Types.ObjectId,
+        ref : 'FeedBack'
+    }],
     cart:{
         items:[{
             productId:{
@@ -65,7 +65,8 @@ const allSchema = new Schema({
     roles:{
         type:[String],
         default:['user']
-    }
+    },
+   
 },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }});
 
 allSchema.methods.addtocart = function(product){

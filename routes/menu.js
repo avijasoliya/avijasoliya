@@ -5,7 +5,7 @@ const Category = require('../models/categorypost');
 const product = require('../models/menu')
 const path = require('path');
 const fs = require('fs');
-
+const CronJob = require('cron').CronJob;
 
 router.get('/menues',(req, res, next) => {
   const CurrentPage = req.query.page || 1;
@@ -235,6 +235,8 @@ router.get('/menu/name', async (req, res, next)=> {
       });
   })
 
+
+
   router.put('/unavailable/:productId', (req,res,next) =>{
     const productId = req.params.productId;
     Product.findById(productId)
@@ -253,9 +255,37 @@ router.get('/menu/name', async (req, res, next)=> {
         }
         next(err);
       });
-  
   })
 
+
+  router.put('/itemunavailable/:productId',(req,res,next) =>{
+    const productId = req.params.productId;
+    let loadedProduct;
+    Product.findById(productId)
+      .then(product=>{
+        if(!product){
+          return res.status(404).json({message:'There are no such products'});
+        }
+        else {
+          loadedProduct = product  ;
+          loadedProduct.availability = false;
+          loadedProduct.save();
+          console.log('The process of making an item available has been started....')
+          var job = new CronJob('1 * * * * *', function() {
+            loadedProduct.availability = true;
+            loadedProduct.save();         
+            console.log(loadedProduct.availability);
+        }, null, true, 'America/Los_Angeles');
+        job.start();
+        return res.status(200).json({message:"Product is unavailable for the moment can you choose another one", product:product})
+      }})
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  })
   
 const clearImage = filePath => {
   filePath = path.join(__dirname, '..', filePath);

@@ -2,6 +2,7 @@ const express = require('express');
 const Order = require('../models/order');
 const Cart = require('../models/cart');
 const Product = require('../models/menu');
+const cart = require('../models/cart');
 
 
 const auth = require('../middleware/is-auth');
@@ -14,19 +15,86 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
   const name = req.body.name;
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
-  const paymentMethod = req.body.paymentMethod;  
+  const paymentMethod = req.body.paymentMethod; 
+  const qty = Number.parseInt(req.body.qty);
+  let productDetails;
+
+ 
   let loadedCart;
   Cart.findOne({email})
   .then(cart=>{
       if(!cart){
-          return res.json({message:'could not find cart'});
+          const error = new Error('could not find cart');
+          error.statusCode(404);
+          throw error;
       }
       loadedCart = cart;
       subTotal= cart.subTotal;
       return Order.findOne({email})
     })
+
+
+
+    // .then(order => {
+    //   if (!order && qty <= 0) {
+    //     throw new Error('Invalid request');
+    //   } else if (order) {
+    //     const indexFound = order.order.findIndex(order => {
+    //       return order.cart === cartId;
+    //     });
+    //     if (indexFound !== -1 && qty <= 0) {
+    //       order.order.splice(indexFound, 1);
+    //       if (order.order.length == 0) {
+    //         order.subTotal = 0;
+    //       } else {
+    //         order.subTotal = order.order.map(order => order.total).reduce((acc, next) => acc + next);
+    //       }
+    //     } else if (indexFound !== -1) {
+    //       order.order[indexFound].email = order.order[indexFound].email + email;
+    //       order.order[indexFound].items = order.order[indexFound].items * productDetails;
+    //       order.order[indexFound].price = productDetails;
+    //       order.subTotal = order.order.map(order => order.subTotal).reduce((acc, next) => acc + next);
+    //     } else if (qty > 0) {
+    //       order.order.push({
+    //         cartId :cartId,
+    //         email: email,
+    //         items:items,
+    //         price: productDetails,
+    //         subTotal: parseInt(items + items)
+    //       })
+    //       order.subTotal = order.order.map(order => order.subTotal).reduce((acc, next) => acc + next);
+    //     } else {
+    //       throw new Error('Invalid request');
+    //     }
+    //     return order.save();
+    //   } else {
+    //     const orderData = {
+    //       email: email,          
+    //       items: [
+    //         {
+    //           productId : productId,
+    //           qty: qty,
+    //           priority: priority,
+    //           price: productDetails,
+    //           total: productDetails * qty,
+
+    //         }],
+    //       subTotal: parseInt(productDetails * qty)
+    //     };
+    //     order = new Order(orderData);
+    //     // return newItem
+    //     return order.save();
+    //   }
+    // })
+    // .then(savedOrder => {
+    //   return res.json(savedOrder)
+    // })
+
+
+
+
     .then(order=>{
-      if(!order){
+      if(order){
         const order = new Order({
           name : name,
           paymentMethod: paymentMethod,
@@ -37,7 +105,6 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
       order.save()
       return res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
       }
-      return res.json({message:"Seems like you made an order already...If not, can you please make anther one using diffrent email?", Your_Order : order})
 
     })
   .catch(err => {
