@@ -3,7 +3,7 @@ const Order = require('../models/order');
 const Cart = require('../models/cart');
 const Product = require('../models/menu');
 const cart = require('../models/cart');
-
+const All = require('../models/all')
 
 const auth = require('../middleware/is-auth');
 
@@ -11,100 +11,50 @@ const router = express.Router();
 
 
 router.put('/makeorder',auth.auth,(req,res,next) =>{
-  const cartId = req.params.cartId;
   const name = req.body.name;
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
-  const paymentMethod = req.body.paymentMethod; 
-  const qty = Number.parseInt(req.body.qty);
-  let productDetails;
-
- 
+  const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
+  let loadedUser;
+  All.findOne({email})
+  .then(all=>{
+    if(!all){
+      const error = new Error('There are no such persons!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    loadedUser = all;
+    // console.log(loadedUser);
+  })
   Cart.findOne({email})
   .then(cart=>{
       if(!cart){
-          const error = new Error('could not find cart');
-          error.statusCode(404);
-          throw error;
+        const error = new Error('Could not find Cart!!');
+        error.statusCode = 404;
+        throw error;
       }
       loadedCart = cart;
-      subTotal= cart.subTotal;
+      subTotal = loadedCart.subTotal;
       return Order.findOne({email})
     })
-
-
-
-    // .then(order => {
-    //   if (!order && qty <= 0) {
-    //     throw new Error('Invalid request');
-    //   } else if (order) {
-    //     const indexFound = order.order.findIndex(order => {
-    //       return order.cart === cartId;
-    //     });
-    //     if (indexFound !== -1 && qty <= 0) {
-    //       order.order.splice(indexFound, 1);
-    //       if (order.order.length == 0) {
-    //         order.subTotal = 0;
-    //       } else {
-    //         order.subTotal = order.order.map(order => order.total).reduce((acc, next) => acc + next);
-    //       }
-    //     } else if (indexFound !== -1) {
-    //       order.order[indexFound].email = order.order[indexFound].email + email;
-    //       order.order[indexFound].items = order.order[indexFound].items * productDetails;
-    //       order.order[indexFound].price = productDetails;
-    //       order.subTotal = order.order.map(order => order.subTotal).reduce((acc, next) => acc + next);
-    //     } else if (qty > 0) {
-    //       order.order.push({
-    //         cartId :cartId,
-    //         email: email,
-    //         items:items,
-    //         price: productDetails,
-    //         subTotal: parseInt(items + items)
-    //       })
-    //       order.subTotal = order.order.map(order => order.subTotal).reduce((acc, next) => acc + next);
-    //     } else {
-    //       throw new Error('Invalid request');
-    //     }
-    //     return order.save();
-    //   } else {
-    //     const orderData = {
-    //       email: email,          
-    //       items: [
-    //         {
-    //           productId : productId,
-    //           qty: qty,
-    //           priority: priority,
-    //           price: productDetails,
-    //           total: productDetails * qty,
-
-    //         }],
-    //       subTotal: parseInt(productDetails * qty)
-    //     };
-    //     order = new Order(orderData);
-    //     // return newItem
-    //     return order.save();
-    //   }
-    // })
-    // .then(savedOrder => {
-    //   return res.json(savedOrder)
-    // })
-
-
-
-
     .then(order=>{
-      if(order){
+      if(!order){
         const order = new Order({
           name : name,
           paymentMethod: paymentMethod,
           email:email,
-          subTotal : subTotal,
-          order: loadedCart            
+          subTotal: subTotal,
+          order: loadedCart
       })
+      console.log(loadedUser)
+
+      loadedUser.orders.push(order);
+      loadedUser.save();
       order.save()
       return res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
       }
+      // return res.json({message:"Seems like you made an order already...If not, can you please make anther one using diffrent email?", Your_Order : order})
 
     })
   .catch(err => {
@@ -113,7 +63,6 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
     }
     next(err);
   });
-
 });
 
 router.get('/getorder/:orderId',(req,res,next) =>{
@@ -162,6 +111,29 @@ router.get('/getorders',(req, res, next) => {
     });
 
 });
+
+
+router.get('/myorders',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
+  All.findOne({email}).populate({path: "orders" })
+  .then(all=>{
+    if(!all){
+      const error = new Error('THere are no such persons!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    return res.status(200).json({message:"here you go..", data:all})
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+
 
 router.put('/receive/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;

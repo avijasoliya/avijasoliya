@@ -66,7 +66,10 @@ const allSchema = new Schema({
         type:[String],
         default:['user']
     },
-   
+   orders:[{
+       type:Schema.Types.ObjectId,
+       ref:'Order'
+   }]
 },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }});
 
 allSchema.methods.addtocart = function(product){

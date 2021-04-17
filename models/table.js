@@ -5,9 +5,10 @@ const tableSchema = new Schema({
 
     table:{type:Number,required:true},
     size:{type:Number,required:true},
-    status:{type:String},
+    Status:{type:String},
     availableTime:Date,
-    QRCode:{type:String}
+    QRCode:{type:String},
+    waiting: {type:Number,default:0}
 });
 
 module.exports = mongoose.model('Table',tableSchema);

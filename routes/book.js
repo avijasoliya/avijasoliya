@@ -18,8 +18,8 @@ router.post('/reservation',function(req,res){
                 checkintime:null,
                 checkouttime:null,
                 name:req.body.name,
-                table:req.body.table,
-                Status:null
+                table:null,
+                Status:req.body.Status
             });
             reservation.save()
             .then(result => { 
@@ -54,7 +54,7 @@ router.post('/table',function(req,res){
             const  tabledetails  =  new  Table ( {
                 table:req.body.table,
                 size:req.body.size,
-                status:'Available',
+                Status:'Available',
                 availableTime:null,
                 waiting:0,
             });
@@ -146,65 +146,65 @@ router.post('/checkin',function(req,res){
     var phone = req.body.phone;
     var table = req.body.table;
     var requestedtime;
-    Reservation.find({'phone':phone,Status:{'$ne':'Finished'}}).count().then(result =>{
+    Reservation.find({phone:phone,Status:'Finished'}).count().then(result =>{
         console.log(" result is " + result);
-        //console.log("result is " + result + " size ");
+        console.log("result is " + result + " size ");
         if (result) {
-            Reservation.find({'phone':phone,Status:{'$ne':'Finished'}}).then(result =>{
-        requestedtime = new Date(result[0].requestedtime);
-        console.log("requested time is " +requestedtime);
-        console.log("current time is " +new Date().getTime());
-        var waiting=  Math.round(((requestedtime.getTime() - new Date().getTime())/3600000)*-60)
-    console.log("waiting is " +waiting);
-    Table.find({"table":table}).then(result => {
-        if (result.length == 0) {
-            res.status(500).json({error:" Wrong table"});
-        }
-        else {
-         if (result[0].waiting > 0 && (result[0].status == 'Checkin' || result[0].status == 'Available')) {
-            Table.updateOne({'table':table},{$set:{waiting:result[0].waiting-1,status:'Reserved'}})
-            .then(result =>
-                {
-                }).catch(err =>{ 
-                     console.log('error');
+            Reservation.find({phone:phone,Status:'Finished'}).then(result =>{
+                requestedtime = new Date(result[0].requestedtime);
+                console.log("requested time is " +requestedtime);
+                console.log("current time is " +new Date().getTime());
+                var waiting=  Math.round(((requestedtime.getTime() - new Date().getTime())/3600000)*-60)
+                console.log("waiting is " +waiting);
+                Table.find({"table":table}).then(result => {
+                    if (result.length == 0) {
+                        res.status(500).json({error:" Wrong table"});
+                    }
+                    else {
+                        if (result[0].waiting >= 0 && (result[0].Status == 'Checkin' || result[0].Status == 'Available')) {
+                            Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Reserved'}})
+                            .then(result =>
+                            {
+                            }).catch(err =>{ 
+                                console.log('error');
+                            })
+                            Reservation.updateOne({phone:phone,Status:'Finished'},{$set:{checkintime:new Date(),Status:'Checked In',waitingtime:waiting + " minutes"}})
+                            .then(result =>
+                            {
+                                res.status(200).json({
+                                    message:"checkedin successfully",
+                                });
+                            }).catch(err =>{
+                                res.status(500).json({error:err});
+                            })
+                        }   
+                        else if (result[0].waiting == 0 && result[0].Status == 'Checkin'){
+                            Table.updateOne({table:table},{$set:{Status:'Reserved'}})
+                            .then(result =>
+                            {
+                            }).catch(err =>{ 
+                                console.log('error');
+                            })
+                            Reservation.updateOne({phone:phone,Status:'Finished'},{$set:{checkintime:new Date(),Status:'Checked In',waitingtime:waiting+ " minutes"}})
+                            .then(result =>
+                            {
+                                res.status(200).json({
+                                    message:"checkedin successfully",
+                                });
+                            }).catch(err =>{
+                                res.status(500).json({error:err});
+                            })
+                        }
+                        else {
+                            res.status(500).json({
+                            error:"Table is not available"});
+                        }
+                    }
+                }).catch(err =>{
                 })
-                Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkintime:new Date(),Status:'Checked In',waitingtime:waiting + " minutes"}})
-            .then(result =>
-        {
-            res.status(200).json({
-                message:"checkedin successfully",
-            });
-        }).catch(err =>{
-            res.status(500).json({error:err});
-        })
-         }
-         else if (result[0].waiting == 0 && result[0].status == 'Checkin'){
-            Table.updateOne({'table':table},{$set:{status:'Reserved'}})
-    .then(result =>
-        {
-        }).catch(err =>{ 
-             console.log('error');
-        })
-        Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkintime:new Date(),Status:'Checked In',waitingtime:waiting+ " minutes"}})
-        .then(result =>
-        {
-            res.status(200).json({
-                message:"checkedin successfully",
-            });
-        }).catch(err =>{
-            res.status(500).json({error:err});
-        })
-    }
-    else {
-        res.status(500).json({
-            error:"Table is not available"});
-     }
-    }
-    }).catch(err =>{
-    })
-}).catch(err =>{
-})
-}
+            }).catch(err =>{
+            })
+        }
 else {
     res.status(500).json({
         error:"Reservation not found"});
@@ -212,4 +212,113 @@ else {
 }).catch(err =>{
 })
 });
+
+
+
+router.post('/checkout',function(req,res){
+    const phone = req.body.phone;
+    const table = req.body.table;
+    var Status;
+    var fphone;
+    // Reservation.find({table:table,Status:'Checked In'}).sort({requestedtime:1}).then(result=>{
+    //     fphone = result[0].phone;
+    // })
+    Reservation.find({phone:phone,Status:'Checked In'}).then(result => {
+        console.log(result)
+        if(result.length > 0){
+            Status = result[0].Status;
+            if (result[0].checkintime == null)
+            {
+                var waiting = Math.round(((new Date().getTime() - result[0].requestedtime)/3600000)*60);
+                Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished',waitingtime:waiting + " minutes"}})
+                .then(result =>{
+                    res.status(500).json("updated");
+                }).catch(err =>{
+                    res.status(500).json({error:err});
+                })
+            }
+            else {
+                Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished'}})
+                .then(result =>{
+                    res.status(500).json("updated");
+
+                }).catch(err =>{
+                    res.status(500).json({error:err});
+                })
+            }
+            var ftime=0;
+            // var add =0;
+            var available;
+            if (result[0].checkintime == null && result[0].waitingtime == null){
+                ftime = Math.round(90 - (((new Date().getTime() - result[0].requestedtime)/3600000)*60));
+            }
+            else if (result[0].checkintime == null && result[0].waitingtime != null){
+                ftime = 75;
+            }
+            else {
+                ftime =  Math.round(75 - ((new Date().getTime() - result[0].checkintime)/3600000)*60);
+            }
+            console.log("ftime is " + ftime);
+            Table.find({table:table}).then( result=>{
+                console.log(" Table is " + result);
+                available = result[0].availableTime - 1000 * 60 * (ftime);
+                if (result[0].waiting > 0 && Status == 'Checked In' || (result[0].Status != 'Reserved' && Status !='Checked In' && fphone==phone && result[0].waiting !=1)){
+                    console.log("check in is " + 'First Checked In')
+                    Table.updateOne({table:table},{$set:{Status:'Checkin',availableTime:available,waiting:result[0].waiting}})
+                    .then(result =>{
+                        alertUser(table);
+                        thanksUser(phone);
+                        res.status(200).json({
+                            message:"checkout successfull",
+                        });
+                    }).catch(err =>{
+                        res.status(500).json({error:err});
+                    })
+                } 
+                else if(result[0].waiting == 1 && Status != 'Checked In'){
+                    console.log("check in is " + 'last Checked In')
+                    Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Available',availableTime:null}})
+                    .then(result =>{
+                        thanksUser(phone);
+                        res.status(200).json({
+                            message:"checkout successfull",
+                        });
+                    }).catch(err =>{
+                        res.status(500).json({error:err});
+                    })
+                }
+                else if(result[0].waiting > 0 && Status != 'Checked In'){
+                    console.log("check in is " + 'Checked In')
+                    Table.updateOne({table:table},{$set:{waiting:result[0].waiting,availableTime:available}})
+                    .then(result =>{
+                        thanksUser(phone);
+                        res.status(200).json({
+                            message:"checkout successfull",
+                        });
+                    }).catch(err =>{
+                        res.status(500).json({error:err});
+                    })
+                }
+                else {
+                    Table.updateOne({table:table},{$set:{Status:'Available',availableTime:null}})
+                    .then(result =>{
+                        thanksUser(phone);
+                        res.status(200).json({
+                            message:"checkout successfull",
+                        });
+                    }).catch(err =>{
+                        res.status(500).json({error:err});
+                    })
+                }
+                })
+        }
+        else {
+            res.status(500).json({error:"No valid reservation found"});
+        }
+    })
+})
+
+
+
+
 module.exports = router;

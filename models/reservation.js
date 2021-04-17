@@ -10,7 +10,7 @@ const reservationschema = new Schema({
     checkintime:Date,
     checkouttime:Date,
     Status:String,
-    Table:Number
+    table:Number
     });
 
     module.exports = mongoose.model('Reservation',reservationschema);
