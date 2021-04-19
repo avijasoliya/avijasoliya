@@ -12,7 +12,6 @@ router.post('/reservation',function(req,res){
         if (!result){
                 const reservation = new Reservation({
                 phone:req.body.phone,
-                count:req.body.count,
                 requestedtime:new Date(),
                 waitingtime:null,
                 checkintime:null,
@@ -120,6 +119,29 @@ router.get('/reservations',function(req,res){
     })
 })
 
+
+router.delete('/deleter/:reservationId', (req, res, next) => {
+    const reservationId = req.params.reservationId;
+    Reservation.findById(reservationId)
+      .then(reservation => {
+        if (!reservation) {
+          const error = new Error('Could not find reservation.');
+          error.statusCode = 404;
+          throw error;
+        }
+        return Reservation.findByIdAndDelete(reservationId);
+      })
+      .then(result => {
+        console.log(result);
+        res.status(200).json({ message: 'Reservation deleted!!' })
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });     
 
 // router.get('/scan',(req,res,next)=>{
     
@@ -232,7 +254,8 @@ router.post('/checkout',function(req,res){
                 var waiting = Math.round(((new Date().getTime() - result[0].requestedtime)/3600000)*60);
                 Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished',waitingtime:waiting + " minutes"}})
                 .then(result =>{
-                    res.status(500).json("updated");
+                    res.status(500).json("checked out");
+
                 }).catch(err =>{
                     res.status(500).json({error:err});
                 })
@@ -240,7 +263,7 @@ router.post('/checkout',function(req,res){
             else {
                 Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished'}})
                 .then(result =>{
-                    res.status(500).json("updated");
+                    res.status(500).json("checked out");
 
                 }).catch(err =>{
                     res.status(500).json({error:err});
@@ -262,6 +285,7 @@ router.post('/checkout',function(req,res){
             Table.find({table:table}).then( result=>{
                 console.log(" Table is " + result);
                 available = result[0].availableTime - 1000 * 60 * (ftime);
+                console.log(available);
                 if (result[0].waiting > 0 && Status == 'Checked In' || (result[0].Status != 'Reserved' && Status !='Checked In' && fphone==phone && result[0].waiting !=1)){
                     console.log("check in is " + 'First Checked In')
                     Table.updateOne({table:table},{$set:{Status:'Checkin',availableTime:available,waiting:result[0].waiting}})

@@ -4,7 +4,6 @@ const Schema  = mongoose.Schema;
 const reservationschema = new Schema({
     phone:{type:Number,required:true},
     name:{type:String,required:true},
-    count:{type:Number,required:true},
     requestedtime:Date,
     waitingtime:String,
     checkintime:Date,

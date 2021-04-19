@@ -10,7 +10,7 @@ const auth = require('../middleware/is-auth');
 const router = express.Router();
 
 
-router.post('/addtocart/:productId',auth.auth,function (req, res, next)  {
+router.post('/addtocart/:productId',auth.auth,(req, res, next) => {
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   const productId = req.params.productId;
@@ -29,9 +29,8 @@ router.post('/addtocart/:productId',auth.auth,function (req, res, next)  {
         return res.status(404).json({ message: "Could not find post" });
       }
       Id = product._id;
-      console.log(Id)
-      productDetails = product.price;
-      // image = product.imageUrl;
+      productDetails = product.offerPrice;
+      console.log(productDetails)
     })
 
 All.findOne({email}).populate({
@@ -94,7 +93,6 @@ All.findOne({email}).populate({
           subTotal: parseInt(productDetails * qty)
         };
         cart = new Cart(cartData);
-        // return newItem
         return cart.save();
       }
     })

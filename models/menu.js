@@ -20,13 +20,22 @@ const productSchema = new Schema(
       type: String,
       required: true
     },
-    price:{
-      type:String,
-      required:true
+    offerPrice:{
+      type:Number,
+      // required:true
+    },
+    originalPrice:{
+      type:Number
     },
     availability:{
       type:Boolean,
+      required:true,
       default:true
+    },
+    offer:{
+      type:Number,
+      // required:true,
+      default:0
     },
     description: {
       type: String,
@@ -37,10 +46,6 @@ const productSchema = new Schema(
       type: Object,
       // required: String
     },
-    // category:[{
-    //     type:Schema.Types.ObjectId,
-    //     ref:'Category'
-    //   }]
   },
   { timestamps: true }
 );

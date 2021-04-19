@@ -23,6 +23,8 @@ const qrRoutes = require('./routes/qrcode');
 const revenueRoutes = require('./routes/revenue');
 const allRoutes = require('./routes/all');
 const complaintRoutes = require('./routes/complaint');
+const restoRoutes = require('./routes/restaurant');
+
 
 const app = express();
 const app1 = express();
@@ -92,6 +94,7 @@ app.use('/all',allRoutes);
 app.use('/complaint',complaintRoutes)
 // app.use('/payment',paymentRoutes);
 app.use('/revenue',revenueRoutes)
+app.use('/restaurant',restoRoutes)
 
 
 
