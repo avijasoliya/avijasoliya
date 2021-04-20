@@ -6,11 +6,13 @@ var ItemSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
-  
   qty: {
     type: Number,
     required: true,
     min: [1, 'Quantity can not be less then 1.']
+  },
+  priority:{
+    type:Number
   },
   price: {
     type: Number,
@@ -22,29 +24,15 @@ var ItemSchema = new Schema({
         }
 });
 const CartSchema = new Schema({
-  email: {
-    type: String,
-    required: true,
-    match: [
-      /[\w]+?@[\w]+?\.[a-z]{2,4}/,
-      'The value of path {PATH} ({VALUE}) is not a valid email address.'
-    ]
-  },
-  items: [ItemSchema],
-  subTotal: {
-            default: 0,
-            type: Number
-        }
+  
+  items: [ItemSchema]
 },{
         timestamps: true
     }
 );
 
 const OrderSchema = new Schema({
-    subTotal:{
-      type:Number,
-      // ref:'Cart'
-    },
+
     name: {
       type: String,
       required: true
@@ -57,25 +45,37 @@ const OrderSchema = new Schema({
         'The value of path {PATH} ({VALUE}) is not a valid email address.'
       ]
     },
-    complaints: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Complaint'
-    }],
+    userId:{
+      type:Schema.Types.ObjectId,
+      ref:'User'
+    },
+    grandTotal: {
+      default: 0,
+      type: Number
+  },
   paymentMethod: {
     type: String,
     default: 'cash'
   },
-  order: [CartSchema],
+  items: [ItemSchema],
   OrderIs:{
     type:String
   },
-  OrderHas:{
-    type:String
+  OrderReceivedAt:{
+    type:Date
   },
+  OrderDoneAt:{
+    type:Date
+  },
+  OrderServedAt:{
+    type:Date
+  },
+  
 
 },{
-timestamps:true
-})
+  timestamps: true
+});
+
 
 OrderSchema.statics = {
   get (id) {
@@ -86,14 +86,11 @@ OrderSchema.statics = {
           return order;
         }
         const err = new Error(
-          'No such product exists!',
-          
+          'No such product exists!',         
         );
         return Promise.reject(err);
       });
   }
 }
-
-  
 
 module.exports = mongoose.model('Order', OrderSchema);

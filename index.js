@@ -5,13 +5,10 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const multer1 = require('multer');
 const fs = require('fs')
+const session = require('express-session')
 
 const homeRoutes = require('./routes/home');
 const postRoutes = require('./routes/post');
-const adminRoutes = require('./routes/admin');
-const managerRoutes = require('./routes/manager');
-const cookRoutes = require('./routes/cook');
-const waiterRoutes = require('./routes/waiter');
 const categoryRoutes = require('./routes/categorypost');
 const subcategoryRoutes = require('./routes/subcategory');
 const menuRoutes = require('./routes/menu');
@@ -76,12 +73,9 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/home', homeRoutes);
+// app.use('/home', homeRoutes);
 app.use('/feed',postRoutes);
-app.use('/admin',adminRoutes);
-app.use('/manager', managerRoutes);
-app.use('/cook',cookRoutes);
-app.use('/waiter',waiterRoutes);
+
 app.use('/categorypost',categoryRoutes);
 app.use('/subcategory',subcategoryRoutes);
 app.use('/menu',menuRoutes);
@@ -95,7 +89,37 @@ app.use('/complaint',complaintRoutes)
 // app.use('/payment',paymentRoutes);
 app.use('/revenue',revenueRoutes)
 app.use('/restaurant',restoRoutes)
+app.use('/home',homeRoutes)
 
+
+
+app.use(session({
+  // It holds the secret key for session
+  secret: 'aaja-tuje-oskar-du',
+  // Forces the session to be saved
+  // back to the session store
+  resave: true,
+  // Forces a session that is "uninitialized"
+  // to be saved to the store
+  saveUninitialized: true
+}))
+ 
+app.get("/", function(req, res){
+  // req.session.key = value
+  req.session.name = 'Restaurant'
+  return res.send("Session Set")
+})
+ 
+app.get("/session", function(req, res){
+  var name = req.session.name
+  return res.send(name)
+  /*  To destroy session you can use
+      this function 
+   req.session.destroy(function(error){
+      console.log("Session Destroyed")
+  })
+  */
+})
 
 
 mongoose.connect('mongodb+srv://nodejs:Avi12345@cluster0.tt0km.mongodb.net/myProject?retryWrites=true&w=majority',{ useNewUrlParser: true , useUnifiedTopology: true })

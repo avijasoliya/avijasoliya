@@ -3,9 +3,9 @@ const Schema  = mongoose.Schema;
 
 const complaintSchema = new Schema(
     {
-        orderId: {
+        productId: {
             type: Schema.Types.ObjectId,
-            ref: 'Order'
+            ref: 'Product'
         },
         title:{
             type:String,

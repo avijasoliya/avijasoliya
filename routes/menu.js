@@ -104,8 +104,8 @@ router.put('/update/:productId',(req, res, next) => {
   const offer = req.body.offer;
   const name = req.body.name;
   const description = req.body.description;
-  let imageUrl = req.body.imageUrl;
-  let loadedOffer;
+  let imageUrl = req.path.imageUrl;
+  let loadedPrice;
   if (req.file) {
     imageUrl = req.file.path;
   }
@@ -140,6 +140,24 @@ router.put('/update/:productId',(req, res, next) => {
       next(err);
     });
 });
+
+
+router.put('/outdate/:productId',(req,res,next) =>{
+  const productId = req.params.productId;
+  Product.findById(productId)
+  .then(product =>{  
+    product.offer = 0;
+    product.offerPrice = product.originalPrice;
+    product.save();
+    return res.status(200).json({message:'The offer on this product has been removed',product:product});
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+})
 
 router.delete('/delete/:productId',  (req, res, next) => {
   const productId = req.params.productId;

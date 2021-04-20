@@ -34,29 +34,26 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
         error.statusCode = 404;
         throw error;
       }
-      loadedCart = cart;
-      subTotal = loadedCart.subTotal;
-      return Order.findOne({email})
+      loadedCart = cart.items;
+      subTotal = cart.subTotal;
+      const order = new Order({
+        name : name,
+        paymentMethod: paymentMethod,
+        email:email,
+        grandTotal: subTotal,
+        userId:id,
+        items: loadedCart
     })
-    .then(order=>{
-      if(!order){
-        const order = new Order({
-          name : name,
-          paymentMethod: paymentMethod,
-          email:email,
-          subTotal: subTotal,
-          order: loadedCart
-      })
-      console.log(loadedUser)
-
-      loadedUser.orders.push(order);
-      loadedUser.save();
-      order.save()
-      return res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
-      }
-      // return res.json({message:"Seems like you made an order already...If not, can you please make anther one using diffrent email?", Your_Order : order})
-
-    })
+    loadedUser.orders.push(order);
+    loadedUser.save();
+    order.save();
+    res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
+    return Cart.findOneAndDelete({email})
+  })
+  .then(cart=>{
+    cart.remove();
+    
+  })
   .catch(err => {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -112,11 +109,13 @@ router.get('/getorders',(req, res, next) => {
 
 });
 
-
 router.get('/myorders',auth.auth,(req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
-  All.findOne({email}).populate({path: "orders" })
+  All.findOne({email}).populate({path:"orders",populate:{
+    path: "items.productId"
+  }
+})
   .then(all=>{
     if(!all){
       const error = new Error('THere are no such persons!!');
@@ -132,8 +131,6 @@ router.get('/myorders',auth.auth,(req,res,next) =>{
     next(err);
   });
 });
-
-
 
 router.put('/receive/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
@@ -203,6 +200,26 @@ router.put('/cancel/:orderId',(req,res,next) =>{
 
 );
 
+router.put('/setdiscount/:orderId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  const discount = req.body.discount;
+  Order.findById(orderId)
+  .then(order=>{
+    if(!order){
+      return res.status(404).json({message:"There are no such order!!"});
+    }
+    const offer = (order.grandTotal)/100 * discount;
+    order.grandTotal = order.grandTotal - offer ;
+    order.save();
+    return res.status(200).json({message:"Sorry for the difficulties...here let us help you with your order",order:order});
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+})
 
 router.put('/done/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;

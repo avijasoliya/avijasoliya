@@ -1,23 +1,20 @@
 const express = require('express');
-const router  =  express();
-const MongoClient = require('mongoose');
+const router = express.Router();
 const Restaurant = require('../models/restaurant')
 
-
-router.post('/createres',(req,res)=>{
-    const name = req.body.name;
-    const url = 'mongodb://localhost:27017';
-MongoClient.connect(url).then((client) => {
-  
-    console.log('Database created');
-      
-    // database name
-    const db = client.db(name);
-      
-    // collection name
-    db.createCollection(name + 'collection');
-})
-  })
+router.post('/addresto',(req,res,next) =>{
+    const RestaurantName = req.body.RestaurantName;
 
 
-  module.exports = router;
+    const resto = new Restaurant({
+        RestaurantName:RestaurantName
+    })
+    resto.save();
+    console.log(resto);
+    return res.status(201).json({message:"Restaurant created!" , RestaurantId : resto._id})
+
+
+
+});
+
+module.exports = router;

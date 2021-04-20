@@ -1,32 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const Complaint = require('../models/complaint');
-const Order = require('../models/order');
+const Product = require('../models/menu');
 const auth = require('../middleware/is-auth');
 
 
 
-router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
-    const orderId = req.params.orderId;
-    const order = req.params.order;
+router.post('/complaint/:productId',auth.auth,(req,res,next)=>{
+
+    let token = req.headers['authorization'];
+    token = token.split(' ')[1];
+    const productId = req.params.productId;
+    const product = req.params.product;
     const title = req.body.title;
     const message = req.body.message;
-    Order.findById(orderId)
-    .then(order => {
-       if (!orderId) {
-           const error = new Error('An order with this id could not be found');
+    Product.findById(productId)
+    .then(product => {
+       if (!productId) {
+           const error = new Error('An product with this id could not be found');
            error.statusCode = 401;
            throw error;
        }
-       console.log(order)
+       console.log(product)
        const complaint = new Complaint({
            title: title,
            message: message,
-           orderId:orderId
+           productId:productId,
+           user: id
        })
        complaint.save();
-       order.complaints.push(complaint);
-       order.save();
+       product.complaints.push(complaint);
+       product.save();
        return res.status(200).json({message:'complaint saved!'});
    })
    .catch(err => {
@@ -89,34 +93,34 @@ router.get('/complaints',(req, res, next) => {
   });
 
 
-  router.get('/complaints',auth.auth,(req, res, next) => {
-    const CurrentPage = req.query.page || 1;
-    const perPage = 10;
-    let totalItems;
-    Complaint.find()
-      .countDocuments()
-      .then(count => {
-        totalItems = count;
-        return Complaint.find()
-          .skip((CurrentPage - 1) * perPage)
-          .limit(perPage)
-      })
-      .then(complaints => {
-        res.status(200)
-          .json({
-            message: 'Fetched complaint Successfully',
-            complaints: complaints,
-            totalItems: totalItems
-          });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
+  // router.get('/complaints',auth.auth,(req, res, next) => {
+  //   const CurrentPage = req.query.page || 1;
+  //   const perPage = 10;
+  //   let totalItems;
+  //   Complaint.find()
+  //     .countDocuments()
+  //     .then(count => {
+  //       totalItems = count;
+  //       return Complaint.find()
+  //         .skip((CurrentPage - 1) * perPage)
+  //         .limit(perPage)
+  //     })
+  //     .then(complaints => {
+  //       res.status(200)
+  //         .json({
+  //           message: 'Fetched complaint Successfully',
+  //           complaints: complaints,
+  //           totalItems: totalItems
+  //         });
+  //     })
+  //     .catch(err => {
+  //       if (!err.statusCode) {
+  //         err.statusCode = 500;
+  //       }
+  //       next(err);
+  //     });
   
-  });
+  // });
 
 //   router.get('/average', (req, res) => {
 //     Complaint.aggregate([

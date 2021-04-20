@@ -46,6 +46,11 @@ const productSchema = new Schema(
       type: Object,
       // required: String
     },
+    complaints:[{
+      type:Schema.Types.ObjectId,
+      ref:'Complaint'
+      
+        }]
   },
   { timestamps: true }
 );

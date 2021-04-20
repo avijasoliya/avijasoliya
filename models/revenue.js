@@ -12,7 +12,7 @@ const revenueSchema = new Schema(
         type: String,
         // required:true
     },
-    subTotal:{  
+    grandTotal:{  
         type: Number,
         ref:'Order'
     },

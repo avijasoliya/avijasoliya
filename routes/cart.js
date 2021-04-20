@@ -17,26 +17,22 @@ router.post('/addtocart/:productId',auth.auth,(req, res, next) => {
   const priority = req.body.priority;
   const qty = Number.parseInt(req.body.qty);
   let productDetails;
-  // let image;
-  // console.log('qty: ', qty);
 
   Product.findById(productId).populate({
+    path: "cart.items.productId",
+    select: "name price description imageUrl "
+  })
+  .then(product => {
+    if (!product) {
+      return res.status(404).json({ message: "Could not find post" });
+    }
+    Id = product._id;
+    productDetails = product.offerPrice;
+  })
+  All.findOne({email}).populate({
     path: "items.productId",
     select: "name price description imageUrl "
   })
-    .then(product => {
-      if (!product) {
-        return res.status(404).json({ message: "Could not find post" });
-      }
-      Id = product._id;
-      productDetails = product.offerPrice;
-      console.log(productDetails)
-    })
-
-All.findOne({email}).populate({
-  path: "items.productId",
-  select: "name price description imageUrl "
-})
     .then(all=>{
       if(!all){
         return res.status(403).json({message:'Register yourself first,will ya?!'})
@@ -77,7 +73,19 @@ All.findOne({email}).populate({
         } else {
           throw new Error('Invalid request');
         }
-        return cart.save();
+        return cart.save((err,cart)=>{
+          Cart.findOne(cart).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      }).exec((err,cart)=> {
+        res.json({
+                    status: 'success',
+                    message: "product added in cart successfully",
+                    cart:cart
+                    // comment: item.comments.id(comment._id)
+                });
+      })
+        })
       } else {
         const cartData = {
           email: email,          
@@ -93,11 +101,19 @@ All.findOne({email}).populate({
           subTotal: parseInt(productDetails * qty)
         };
         cart = new Cart(cartData);
-        return cart.save();
+        return cart.save((err,cart)=>{
+          Cart.findOne(cart).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      }).exec((err,cart)=> {
+        res.json({
+                    status: 'success',
+                    message: "product added in cart successfully",
+                    cart:cart
+                });
+      })
+        });
       }
-    })
-    .then(savedCart => {
-      return res.json(savedCart)
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -113,7 +129,10 @@ router.get('/getcart',auth.auth,(req, res, next) => {
   if (!email) {
     return res.status(200).json({message:'Enter a valid email first'})
   }
-  Cart.findOne({email:email})
+  Cart.findOne({email:email}).populate({
+    path: "items.productId",
+    select: "name price description imageUrl "
+  })
     .then(cart=>{
       if(!cart){
         return res.status(404).json({message:'Cart not found'})
