@@ -151,7 +151,7 @@ router.put('/receive/:orderId',(req,res,next) =>{
   });
 });
 
-router.get('/list', (req,res,next) =>{
+router.post('/list', (req,res,next) =>{
   const OrderIs = req.body.OrderIs;
 
   Order.find({OrderIs})

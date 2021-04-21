@@ -67,15 +67,17 @@ const auth = require('../middleware/is-auth');
 
 
 router.post('/revenuedate', (req, res) => {
-  const dates= req.body.dates;
+  const startdate= req.body.startdate;
+  const enddate= req.body.enddate;
   
   Order.aggregate([
   
   {$project: {_id:1,date:{$dateToString: { format: "%d/%m/%Y", date: "$createdAt"}},grandTotal:1}},
   {$group : 
-    {_id:{date:"$date"}, sum:{$sum:"$grandTotal"}}
+    {_id:{date:"$date"}, Total:{$sum:"$grandTotal"}}
+    
   },
-  {$match : {"_id.date" : dates    }}
+  {$match : {"_id.date" : { "$gte": startdate, "$lte": enddate }}}
 ],
 function(err, result) {
   if (err) {
@@ -134,6 +136,42 @@ function(err, result) {
 
 
 
+// router.post('/revenuedate', (req, res) => {
+//   const startdate= req.body.startdate;
+//   const enddate= req.body.enddate;
+  
+//   Order.aggregate([
+//     {$project: {_id:1,date:{$dateToString: { format: "/%m/%Y", date: "$createdAt"}},grandTotal:1}},
+//     {
+//            $match: {
+//               createdAt: {
+//                  $gte: new Date(startdate),
+//                  $lte: new Date(enddate)
+//               }
+//            }
+//         }, {
+//      $group: {
+//         _id: null,
+//         SUM: {
+//            $sum: "$grandTotal"
+//         },
+//         COUNT: {
+//            $sum: 1
+//        }
+//      }
+//      }],
+// function(err, result) {
+//   if (err) {
+//     res.send(err);
+//   } else {
+//     res.json(result);
+//   }
+// })
+// .catch(error => console.error(error))
+// });
+
+
+
 
 router.get('/sum', (req, res) => {
     Order.aggregate([
@@ -151,4 +189,4 @@ router.get('/sum', (req, res) => {
     })
     .catch(error => console.error(error))
 });
-module.exports = router;    
+module.exports = router;      

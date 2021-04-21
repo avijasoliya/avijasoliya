@@ -4,8 +4,6 @@ const Restaurant = require('../models/restaurant')
 
 router.post('/addresto',(req,res,next) =>{
     const RestaurantName = req.body.RestaurantName;
-
-
     const resto = new Restaurant({
         RestaurantName:RestaurantName
     })

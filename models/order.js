@@ -59,7 +59,8 @@ const OrderSchema = new Schema({
   },
   items: [ItemSchema],
   OrderIs:{
-    type:String
+    type:String,
+    default:'Pending'
   },
   OrderReceivedAt:{
     type:Date
