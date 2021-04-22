@@ -21,7 +21,7 @@ const revenueRoutes = require('./routes/revenue');
 const allRoutes = require('./routes/all');
 const complaintRoutes = require('./routes/complaint');
 const restoRoutes = require('./routes/restaurant');
-
+const ingredientsRoutes = require('./routes/ingredients');
 
 const app = express();
 const app1 = express();
@@ -90,7 +90,7 @@ app.use('/complaint',complaintRoutes)
 app.use('/revenue',revenueRoutes)
 app.use('/restaurant',restoRoutes)
 app.use('/home',homeRoutes)
-
+app.use('/ingredients',ingredientsRoutes)
 
 
 app.use(session({

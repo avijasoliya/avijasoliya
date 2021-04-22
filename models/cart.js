@@ -2,12 +2,17 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 var ItemSchema = new Schema({
-  product_id:{
-    type:String
-  },
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
+  product_id: {
+    type:Schema.Types.ObjectId,
             ref: 'Product',
+  },
+  productId:{
+    type:Schema.Types.ObjectId,
+    ref:'Product'
+  },
+  ingredientId:{
+    type:Schema.Types.ObjectId,
+    ref:'Ingredient'
   },
   priority:{
     type:Number,
@@ -18,17 +23,16 @@ var ItemSchema = new Schema({
     required: true,
     min: [1, 'Quantity can not be less then 1.']
   },
-  imageUrl: {
-    type: String,
-    // required: true
-  },
-  price: {
+  productPrice: {
     type: Number,
             required: true,
         },
-        total: {
-            type: Number,
-            required: true,
+  ingredientPrice:{
+    type:Number
+  },
+  total: {
+      type: Number,
+      required: true,
         }
 });
 const CartSchema = new Schema({

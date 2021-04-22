@@ -72,7 +72,7 @@ router.post('/revenuedate', (req, res) => {
   
   Order.aggregate([
   
-  {$project: {_id:1,date:{$dateToString: { format: "%d/%m/%Y", date: "$createdAt"}},grandTotal:1}},
+  {$project: {_id:null,date:{$dateToString: { format: "%d/%m/%Y", date: "$createdAt"}},grandTotal:1}},
   {$group : 
     {_id:{date:"$date"}, Total:{$sum:"$grandTotal"}}
     
@@ -136,39 +136,38 @@ function(err, result) {
 
 
 
-// router.post('/revenuedate', (req, res) => {
-//   const startdate= req.body.startdate;
-//   const enddate= req.body.enddate;
+router.post('/revenuedates', (req, res) => {
+  const startdate= req.body.startdate;
+  const enddate= req.body.enddate;
   
-//   Order.aggregate([
-//     {$project: {_id:1,date:{$dateToString: { format: "/%m/%Y", date: "$createdAt"}},grandTotal:1}},
-//     {
-//            $match: {
-//               createdAt: {
-//                  $gte: new Date(startdate),
-//                  $lte: new Date(enddate)
-//               }
-//            }
-//         }, {
-//      $group: {
-//         _id: null,
-//         SUM: {
-//            $sum: "$grandTotal"
-//         },
-//         COUNT: {
-//            $sum: 1
-//        }
-//      }
-//      }],
-// function(err, result) {
-//   if (err) {
-//     res.send(err);
-//   } else {
-//     res.json(result);
-//   }
-// })
-// .catch(error => console.error(error))
-// });
+  Order.aggregate([
+    {
+           $match: {
+              createdAt: {
+                 $gte: new Date(startdate),
+                 $lte: new Date(enddate)
+              }
+           }
+        }, {
+     $group: {
+        _id: 1,
+        SUM: {
+           $sum: "$grandTotal"
+        },
+        COUNT: {
+           $sum: 1
+       }
+     }
+     }],
+function(err, result) {
+  if (err) {
+    res.send(err);
+  } else {
+    res.json(result);
+  }
+})
+.catch(error => console.error(error))
+});
 
 
 

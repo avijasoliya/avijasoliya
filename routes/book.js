@@ -6,27 +6,31 @@ const QRCode = require('qr-image');
 var Jimp = require("jimp");
 var fs = require('fs')
 var qrCode = require('qrcode-reader');
+const auth = require('../middleware/is-auth');
 
-router.post('/reservation',function(req,res){
+
+router.post('/reservation',auth.auth,function(req,res){
+    let token = req.headers['authorization'];
+    token = token.split(' ')[1];
+    console.log(name);
     Reservation.findOne({phone:req.body.phone}).then(result=>{
         if (!result){
                 const reservation = new Reservation({
-                phone:req.body.phone,
+                phone:phone,
                 requestedtime:new Date(),
                 waitingtime:null,
                 checkintime:null,
                 checkouttime:null,
-                name:req.body.name,
+                name:name,
                 table:null,
-                Status:req.body.Status
+                Status:'Finished'
             });
             reservation.save()
             .then(result => { 
                 res.status(201).json({
                     message:"created successfully",
                     createdTable:reservation,
-                    phone:req.body.phone,
-                    name:req.body.name
+                   
                 });
                 newcustomer = reservation
                 sendMessage(reservation,req,res);
@@ -164,9 +168,28 @@ router.delete('/deleter/:reservationId', (req, res, next) => {
 
 
 
-router.post('/checkin',function(req,res){
-    var phone = req.body.phone;
-    var table = req.body.table;
+router.post('/checkin',auth.auth,function(req,res){
+    let token = req.headers['authorization'];
+    token = token.split(' ')[1];
+
+
+    var buffer = fs.readFileSync('./images' + '/2.png');
+    Jimp.read(buffer, function(err, image) {
+	    if (err) {
+		    console.error(err);
+	    }
+	    let qrcode = new qrCode();
+	    qrcode.callback = function(err, value) {
+		    if (err) {
+			    console.error(err);
+		    }
+		    console.log(value.result);
+	    };
+	    qrcode.decode(image.bitmap);
+    });
+
+    // var phone = req.body.phone;
+    // var table = req.body.table;
     var requestedtime;
     Reservation.find({phone:phone,Status:'Finished'}).count().then(result =>{
         console.log(" result is " + result);
@@ -234,6 +257,25 @@ else {
 }).catch(err =>{
 })
 });
+
+
+router.post('/scan',(req,res)=>{
+var buffer = fs.readFileSync('./images' + '/2.png');
+Jimp.read(buffer, function(err, image) {
+	if (err) {
+		console.error(err);
+	}
+	let qrcode = new qrCode();
+	qrcode.callback = function(err, value) {
+		if (err) {
+			console.error(err);
+		}
+		console.log(value.result);
+	};
+	qrcode.decode(image.bitmap);
+});
+})
+
 
 
 

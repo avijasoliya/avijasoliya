@@ -16,6 +16,8 @@ exports.auth = (req,res,next)=>{
             email = user.email;
             id = user.Id;
             phone = user.phone;
+            name = user.name;
+            // console.log(user);
             // console.log(email);
             // user.email = email;
             // console.log(email);
