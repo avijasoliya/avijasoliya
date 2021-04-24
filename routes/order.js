@@ -69,12 +69,15 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
 
 router.get('/getorder/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
-  Order.findById(orderId)
+  Order.findById(orderId).populate({path:"items",populate:{
+    path: "productId"
+  }
+})
   .then(order=>{
       if(!order){
           return res.status(404).json({message:"please make an order first :)"})
       }
-      return res.status(200).json({message:"your order", order:order})
+      return res.status(200).json({message:"The order", order:order})
   })
   .catch(err => {
     if (!err.statusCode) {
@@ -89,11 +92,17 @@ router.get('/getorders',(req, res, next) => {
   const CurrentPage = req.query.page || 1;
   const perPage = 20;
   let totalItems;
-  Order.find()
+  Order.find().populate({path:"items",populate:{
+    path: "productId"
+  }
+})
     .countDocuments()
     .then(count => {
       totalItems = count;
-      return Order.find()
+      return Order.find().populate({path:"items",populate:{
+        path: "productId"
+      }
+    })
         .skip((CurrentPage - 1) * perPage)
         .limit(perPage)
     })
@@ -110,8 +119,7 @@ router.get('/getorders',(req, res, next) => {
         err.statusCode = 500;
       }
       next(err);
-    });
-
+    });  
 });
 
 router.get('/myorders',auth.auth,(req,res,next) =>{
