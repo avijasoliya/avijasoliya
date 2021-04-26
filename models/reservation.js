@@ -9,7 +9,8 @@ const reservationschema = new Schema({
     checkintime:Date,
     checkouttime:Date,
     Status:String,
-    table:Number
+    table:Number,
+    restaurantId:{type:Schema.Types.ObjectId}
     });
 
     module.exports = mongoose.model('Reservation',reservationschema);

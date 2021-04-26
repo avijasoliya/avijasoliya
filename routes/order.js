@@ -191,7 +191,6 @@ router.put('/cancel/:orderId',(req,res,next) =>{
       }
       order.OrderIs = 'Cancelled';
       order.save();
-      console.log(order.order[0].items[0].productId)
       return Product.find()
   }).then(count => {
       totalItems = count;
