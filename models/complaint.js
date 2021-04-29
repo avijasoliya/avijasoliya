@@ -14,9 +14,9 @@ const complaintSchema = new Schema(
             type:String,
             required:true
         },
-        user:{
+        userId:{
             type:Schema.Types.ObjectId,
-            ref:'User'
+            ref:'All'
         }
     }
 )

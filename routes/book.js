@@ -9,8 +9,8 @@ var qrCode = require('qrcode-reader');
 const auth = require('../middleware/is-auth');
 
 
-router.post('/:restaurantId/reservation',auth.auth,function(req,res){
-    const restaurantId = req.params.restaurantId;
+router.post('/reservation',auth.auth,function(req,res){
+    // const restaurantId = req.params.restaurantId;
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
     console.log(name);
@@ -50,13 +50,13 @@ router.post('/:restaurantId/reservation',auth.auth,function(req,res){
 
 router.set("view engine","ejs");
 
-router.post('/:restaurantId/table',function(req,res){
-    const restaurantId = req.params.restaurantId;
+router.post('/table',function(req,res){
+    // const restaurantId = req.params.restaurantId;
     Table.find({table:req.body.table}).then(result => {
-        if(result.length > 0){
-            res.status(500).json({message:'Table Exists with same id !!! Please use a different id'});
-        }
-        else {
+        // if(result.length > 0){
+        //     res.status(500).json({message:'Table Exists with same id !!! Please use a different id'});
+        // }
+        // else {
             const  tabledetails  =  new  Table ( {
                 table:req.body.table,
                 size:req.body.size,
@@ -87,13 +87,13 @@ router.post('/:restaurantId/table',function(req,res){
             }).catch(err => {
                 res.status(500).json({error:err});
             })
-        }
+        // }
     })
 });
 
 
-router.delete('/:restaurantId/delete/:tableId', (req, res, next) => {
-    const restaurantId = req.params.restaurantId;
+router.delete('/delete/:tableId', (req, res, next) => {
+    // const restaurantId = req.params.restaurantId;
 
     const tableId = req.params.tableId;
     Table.findById(tableId)
@@ -118,8 +118,8 @@ router.delete('/:restaurantId/delete/:tableId', (req, res, next) => {
   });     
 
 
-router.get('/:restaurantId/reservations',function(req,res){
-    const restaurantId = req.params.restaurantId;
+router.get('/reservations',function(req,res){
+    // const restaurantId = req.params.restaurantId;
 
     Reservation.find({Status:{'$ne':'Finished'}}).sort({requestedtime:1}).then(result =>{
         if (result.length == 0){
@@ -133,8 +133,8 @@ router.get('/:restaurantId/reservations',function(req,res){
 })
 
 
-router.delete('/:restaurantId/deleter/:reservationId', (req, res, next) => {
-    const restaurantId = req.params.restaurantId;
+router.delete('/deleter/:reservationId', (req, res, next) => {
+    // const restaurantId = req.params.restaurantId;
 
     const reservationId = req.params.reservationId;
     Reservation.findById(reservationId)
@@ -178,10 +178,10 @@ router.delete('/:restaurantId/deleter/:reservationId', (req, res, next) => {
 // })
 
 
-router.post('/:restaurantId/checkin',auth.auth,function(req,res){
+router.post('/checkin',auth.auth,function(req,res){
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
-    const restaurantId = req.params.restaurantId;
+    // const restaurantId = req.params.restaurantId;
 
 
     var buffer = fs.readFileSync('./images' + '/2.png');

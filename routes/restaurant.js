@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Restaurant = require('../models/restaurant')
-// const Payment =
+const Payment = require
+
+
+
+
 router.post('/addresto',(req,res,next) =>{
     const RestaurantName = req.body.RestaurantName;
     const resto = new Restaurant({

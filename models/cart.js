@@ -35,6 +35,8 @@ var ItemSchema = new Schema({
       required: true,
         }
 });
+
+
 const CartSchema = new Schema({
   email: {
     type: String,
@@ -54,6 +56,8 @@ const CartSchema = new Schema({
         timestamps: true
     }
 );
+
+
 CartSchema.statics = {
   get ({ email } = {}) {
     let condition = { email: email };

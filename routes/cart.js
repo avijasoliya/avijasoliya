@@ -235,6 +235,230 @@ All.findOne({email}).populate({
     })
 }})
 
+router.post('/waiter/addtocart/:productId/:ingredientId?',(req, res, next) => {
+  const email = req.body.email;
+  var productId = req.params.productId;
+  var ingredientId = req.params.ingredientId;
+  const priority = req.body.priority;
+  const qty = Number.parseInt(req.body.qty);
+  let productDetails;
+  let Ingprice;
+  console.log(req.params)
+
+  if (ingredientId == undefined){
+    Product.findById(productId)
+    .then(product => {
+      if (!product) {
+        return res.status(404).json({ message: "Could not find post" });
+      }
+      Id = product._id;
+      productDetails = product.offerPrice;
+    })
+
+All.findOne({email}).populate({
+  path: "items.productId",
+  select: "name price description imageUrl "
+})
+    .then(all=>{
+      if(!all){
+        return res.status(403).json({message:'Register yourself first,will ya?!'})
+      }
+      return Cart.findOne({ email })
+    })
+    .then(cart => {
+      if (!cart && qty <= 0) {
+        throw new Error('Invalid request');
+      } else if (cart) {
+        const indexFound = cart.items.findIndex(item => {
+          return item.product_id === productId;
+        });
+        if (indexFound !== -1 && qty <= 0) {
+          cart.items.splice(indexFound, 1);
+          if (cart.items.length == 0) {
+            cart.subTotal = 0;
+          } else {
+            cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+          }
+        } else if (indexFound !== -1) {
+          cart.items[indexFound].qty = cart.items[indexFound].qty + qty;
+          cart.items[indexFound].total = cart.items[indexFound].qty * productDetails;
+          cart.items[indexFound].productPrice = productDetails;
+          cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+        } else if (qty > 0) {
+          cart.items.push({
+            productId :productId,
+            qty: qty,
+            priority:priority,
+            productPrice: productDetails,
+            total: parseInt((productDetails * qty))
+          })
+          cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+        } else {
+          throw new Error('Invalid request');
+        }
+        return cart.save((err,cart)=>{
+          Cart.findOne(cart).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      }).exec((err,cart)=> {
+        return res.json({
+                    status: 'success',
+                    message: "product added in cart successfully",
+                    cart:cart
+                });
+      })
+        })
+      } else {
+        const cartData = {
+          email: email,          
+          items: [
+            {
+              productId : productId,
+              qty: qty,
+              priority: priority,
+              productPrice: productDetails,
+              total: parseInt((productDetails * qty))
+            }],
+            subTotal : parseInt((productDetails * qty))
+        };
+        cart = new Cart(cartData);
+        return cart.save((err,cart)=>{
+          Cart.findOne(cart).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      }).exec((err,cart)=> {
+        res.json({
+                    status: 'success',
+                    message: "product added in cart successfully",
+                    cart:cart
+                });
+      })
+        });
+      }
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+}
+else {
+  Product.findById(productId)
+    .then(product => {
+      if (!product) {
+        return res.status(404).json({ message: "Could not find post" });
+      }
+      Id = product._id;
+      productDetails = product.offerPrice;
+    })
+
+    Ingredient.findById(ingredientId)
+    .then(ingredient => {
+      if (!ingredient) {
+        return res.status(404).json({ message: "Could not find ingredient" });
+      }
+      Ingprice = ingredient.price;
+    })
+
+
+All.findOne({email}).populate({
+  path: "items.productId",
+  select: "name price description imageUrl "
+})
+    .then(all=>{
+      if(!all){
+        return res.status(403).json({message:'Register yourself first,will ya?!'})
+      }
+      return Cart.findOne({ email }).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      })    
+    })
+    .then(cart => {
+      if (!cart && qty <= 0) {
+        throw new Error('Invalid request');
+      } else if (cart) {
+        const indexFound = cart.items.findIndex(item => {
+          return item.product_id === productId;
+        });
+        if (indexFound !== -1 && qty <= 0) {
+          cart.items.splice(indexFound, 1);
+          if (cart.items.length == 0) {
+            cart.subTotal = 0;
+          } else {
+            cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+          }
+        } else if (indexFound !== -1) {
+          cart.items[indexFound].qty = cart.items[indexFound].qty + qty;
+          cart.items[indexFound].total = cart.items[indexFound].qty * productDetails;
+          cart.items[indexFound].productPrice = productDetails;
+          cart.items[indexFound].ingredientPrice = Ingprice;
+          cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+        } else if (qty > 0) {
+          cart.items.push({
+            productId :productId,
+            ingredientId : ingredientId,
+            qty: qty,
+            priority:priority,
+            ingredientPrice:Ingprice,
+            productPrice: productDetails,
+            total: parseInt((productDetails * qty) + Ingprice)
+          })
+          cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+        } else {
+          throw new Error('Invalid request');
+        }
+        return cart.save((err,cart)=>{
+          Cart.findOne(cart).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      }).exec((err,cart)=> {
+        return res.json({
+                    status: 'success',
+                    message: "product added in cart successfully",
+                    cart:cart
+                });
+      })
+        })
+      } else {
+        const cartData = {
+          email: email,          
+          items: [
+            {
+              productId : productId,
+              ingredientId : ingredientId,
+              qty: qty,
+              priority: priority,
+              productPrice: productDetails,
+              ingredientPrice:Ingprice,
+              total: parseInt((productDetails * qty) + Ingprice)
+            }],
+            subTotal : parseInt((productDetails * qty) + Ingprice)
+        };
+        cart = new Cart(cartData);
+        return cart.save((err,cart)=>{
+          Cart.findOne(cart).populate({
+        path: "items.productId",
+        select: "name price description imageUrl "
+      }).exec((err,cart)=> {
+        res.json({
+                    status: 'success',
+                    message: "product added in cart successfully",
+                    cart:cart
+                });
+      })
+        });
+      }
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+}})
+
 router.get('/getcart',auth.auth,(req, res, next) => {
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
@@ -242,8 +466,9 @@ router.get('/getcart',auth.auth,(req, res, next) => {
     return res.status(200).json({message:'Enter a valid email first'})
   }
   Cart.findOne({email:email}).populate({
-    path: "items.productId",
-    select: "name price description imageUrl "
+    path: "items.productId"
+  }).populate({
+    path: "items.ingredientId"
   })
     .then(cart=>{
       if(!cart){
@@ -259,22 +484,24 @@ router.get('/getcart',auth.auth,(req, res, next) => {
     });
 });
 
-router.put('/subtract/:productId',auth.auth,(req, res, next) =>{
+router.put('/subtract/:productId',auth.auth,function (req, res, next) {
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   const product_id = req.params.product_id;
   const qty = Number.parseInt(req.body.qty);
   let productDetails;
+  let loadedPrice;
   console.log('qty: ', qty);
   Product.findById(req.params.productId)
     .then(product => {
       if (!product) {
         res.status(404).json({ message: "Could not find product" });
       }
-      else{productDetails = product.price;}
+      else{productDetails = product.offerPrice;
+            console.log(productDetails);
+            return Cart.findOne({ email: email })
+      }
     })
-  Cart.findOne({ email: email })
-    .exec()
     .then(cart => {
       if (!cart || qty <= 0) {
         throw new Error('Invalid request');
@@ -282,9 +509,9 @@ router.put('/subtract/:productId',auth.auth,(req, res, next) =>{
         const indexFound = cart.items.findIndex(item => {
           return item.product_id === product_id;
         });
-        if (indexFound !== -1) {
-          console.log('index Found: ', indexFound);
-          console.log('before update items: ', cart.items);
+        if (indexFound !== -1 && cart.items[0].ingredientPrice == undefined ) {
+         
+
           let updatedQty = cart.items[indexFound].qty - qty;
           let updatedTotal = updatedQty * productDetails;
           let updatedPrice = productDetails;
@@ -295,11 +522,26 @@ router.put('/subtract/:productId',auth.auth,(req, res, next) =>{
             cart.items[indexFound].total = updatedTotal;
             cart.items[indexFound].price = updatedPrice;
             cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
-
           }
-          console.log('after update items: ', cart.items);
           return cart.save();
-        } else {
+        }
+        else if (indexFound !== -1  ) {
+          
+
+          let updatedQty = cart.items[indexFound].qty - qty;
+          let updatedTotal = (updatedQty * productDetails) + (updatedQty * cart.items[0].ingredientPrice);
+          let updatedPrice = productDetails;
+          if (updatedQty <= 0) {
+            cart.items.splice(indexFound, 1);
+          } else {
+            cart.items[indexFound].qty = updatedQty;
+            cart.items[indexFound].total = updatedTotal;
+            cart.items[indexFound].price = updatedPrice;
+            cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
+          }
+          return cart.save();
+        }
+         else {
           throw new Error('Invalid request');
         }
       }

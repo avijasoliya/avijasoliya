@@ -28,7 +28,6 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
       loadedUser = all;
       return Cart.findOne({email})
     }
-    
   })    
   .then(cart=>{
       if(!cart){
@@ -48,10 +47,61 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
     })
     order.save();      
     loadedUser.orders.push(order);
-    loadedUser.save();
-    // console.log(loadedUser)
+    loadedUser.save();    
+    res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
+    return Cart.findOneAndDelete({email})
+  })
+  .then(cart=>{
+    cart.remove();
     
-    
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+
+router.put('/waiter/makeorder',(req,res,next) =>{
+  const email = req.body.email;
+  const phone = req.body.phone;
+  const name = req.body.name;
+  const paymentMethod = req.body.paymentMethod;  
+  let loadedCart;
+  var loadedUser;
+  All.findOne({email})
+  .then(all=>{
+    if(!all){
+      const error = new Error('There are no such persons!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedUser = all;
+      return Cart.findOne({email})
+    }
+  })    
+  .then(cart=>{
+      if(!cart){
+        const error = new Error('Could not find Cart!!');
+        error.statusCode = 404;
+        throw error;
+      }
+      loadedCart = cart.items;
+      subTotal = cart.subTotal;
+      const order = new Order({
+        name : name,
+        paymentMethod: paymentMethod,
+        email:email,
+        grandTotal: subTotal,
+        // userId:id,
+        items: loadedCart
+    })
+    order.save();      
+    loadedUser.orders.push(order);
+    loadedUser.save();    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })

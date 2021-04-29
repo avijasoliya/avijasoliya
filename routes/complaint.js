@@ -4,42 +4,47 @@ const Complaint = require('../models/complaint');
 const Order = require('../models/order');
 const auth = require('../middleware/is-auth');
 
-
-
 router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
-
-  let token = req.headers['authorization'];
-  token = token.split(' ')[1];
-  const orderId = req.params.orderId;
-  const order = req.params.order;
   const title = req.body.title;
   const message = req.body.message;
-  Order.findById(orderId)
-  .then(order => {
-      if (!orderId) {
-          const error = new Error('An order with this id could not be found');
-          error.statusCode = 401;
-          throw error;
-      }
-      console.log(order)
-      const complaint = new Complaint({
-          title: title,
-          message: message,
-          orderId:orderId,
-          user: id
-      })
-      complaint.save();
-      order.complaints.push(complaint);
-      order.save();
-      return res.status(200).json({message:'complaint saved!'});
-  })
-  .catch(err => {
-      if (!err.statusCode) {
-          err.statusCode = 500;
-      }
-      next(err);
-  })
-})
+    const orderId = req.params.orderId;
+    let loadedAll;
+    let token = req.headers['authorization'];
+    token = token.split(' ')[1];
+    All.findById(id)
+    .then(all=>{
+      // console.log(all);
+      loadedAll  = all;
+      return  Order.findById(orderId)
+    })  
+    .then(order => {
+       if (!orderId) {
+           const error = new Error('An order with this id could not be found');
+           error.statusCode = 401;
+           throw error;
+       } 
+       const complaint = new Complaint({
+           title: title,
+           message: message,
+           orderId:orderId,
+           userId:id
+       })
+       complaint.save();
+       order.complaints.push(complaint);
+       order.save();
+       loadedAll.complaints.push(complaint);
+       loadedAll.save();
+      //  console.log(loadedAll)
+       return res.status(200).json({message:'complaint saved!',complaint:complaint});
+   })
+   .catch(err => {
+       if (!err.statusCode) {
+           err.statusCode = 500;
+       }
+       next(err);
+   })
+}
+)
 
 
 router.get('/complaints', (req, res, next) => {
@@ -50,7 +55,7 @@ router.get('/complaints', (req, res, next) => {
     .countDocuments()
     .then(count => {
       totalItems = count;
-      return Complaint.find().populate({path:"orderId"})
+      return Complaint.find().populate({path:"orderId"}).populate({path:"userId"})
         .skip((CurrentPage - 1) * perPage)
         .limit(perPage)
     })
@@ -74,7 +79,7 @@ router.get('/complaints', (req, res, next) => {
 
 router.get('/complaint/:complaintId',(req, res, next) => {
   const complaintId = req.params.complaintId;
-  Complaint.findById(complaintId).populate({path:"orderId"})
+  Complaint.findById(complaintId).populate({path:"userId"}).populate({path:"orderId"})
     .then(complaint => {
       if (!complaint) {
         const error = new Error('Could not find complaint.');
@@ -83,7 +88,6 @@ router.get('/complaint/:complaintId',(req, res, next) => {
       }
       res.status(200).json({ message: 'complaint fetched.', complaint: complaint });
     })
-    
     .catch(err => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -92,52 +96,6 @@ router.get('/complaint/:complaintId',(req, res, next) => {
     });
 });
 
-
-  // router.get('/complaints',auth.auth,(req, res, next) => {
-  //   const CurrentPage = req.query.page || 1;
-  //   const perPage = 10;
-  //   let totalItems;
-  //   Complaint.find()
-  //     .countDocuments()
-  //     .then(count => {
-  //       totalItems = count;
-  //       return Complaint.find()
-  //         .skip((CurrentPage - 1) * perPage)
-  //         .limit(perPage)
-  //     })
-  //     .then(complaints => {
-  //       res.status(200)
-  //         .json({
-  //           message: 'Fetched complaint Successfully',
-  //           complaints: complaints,
-  //           totalItems: totalItems
-  //         });
-  //     })
-  //     .catch(err => {
-  //       if (!err.statusCode) {
-  //         err.statusCode = 500;
-  //       }
-  //       next(err);
-  //     });
-  
-  // });
-
-//   router.get('/average', (req, res) => {
-//     Complaint.aggregate([
-//     {
-//       $group: {
-//         _id: "$userId",
-//         avgrating: {
-//           $avg: "$rating"
-//         }
-//       }
-//     }
-//   ])
-//     .then(results => {
-//         res.send({ rating: results[0].avgrating });
-//     })
-//     .catch(error => console.error(error))
-// });
 
 
 module.exports = router;

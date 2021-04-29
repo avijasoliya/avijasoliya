@@ -69,7 +69,11 @@ const allSchema = new Schema({
    orders:[{
        type:Schema.Types.ObjectId,
        ref:'Order'
-   }]
+   }],
+   complaints:[{
+    type:Schema.Types.ObjectId,
+    ref:'Complaint'
+}]
 },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }});
 
 allSchema.methods.addtocart = function(product){

@@ -30,7 +30,7 @@ router.post('/feedback',auth.auth,(req,res,next)=>{
        feedback.save();
        user.feedbacks.push(feedback);
        user.save();
-       return res.status(200).json({message:'Feedback saved!'});
+       return res.status(200).json({message:'Thank you for the feedback'});
    })
    .catch(err => {
        if (!err.statusCode) {
