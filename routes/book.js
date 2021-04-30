@@ -92,6 +92,28 @@ router.post('/table',function(req,res){
 });
 
 
+
+router.post('/tables',(req, res, next) => {
+   let totalItems;
+    Table.find()      
+      .then(tables => {
+        res.status(200)
+          .json({
+            message: 'tables fetched Successfully',
+            tables: tables,
+            totalItems: totalItems
+          });
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  
+  });
+
+
 router.delete('/delete/:tableId', (req, res, next) => {
     // const restaurantId = req.params.restaurantId;
 
@@ -157,6 +179,39 @@ router.delete('/deleter/:reservationId', (req, res, next) => {
         next(err);
       });
   });     
+
+
+router.put('/update/:tableId',(req, res, next) => {
+const tableId = req.params.tableId;
+const table = req.body.table;
+const size = req.body.size;
+
+if (!table) {
+    const error = new Error('No table found.');
+    error.statusCode = 422;
+    throw error;
+}
+Table.findById(tableId)
+    .then(tables => {
+    if (!table) {
+        const error = new Error('Could not find table.');
+        error.statusCode = 404;
+        throw error;
+    }
+    tables.table = table;
+    tables.size = size;
+    return tables.save();
+    })
+    .then(result => {
+    return res.status(200).json({ message: 'table updated!', table: result});
+    })
+    .catch(err => {
+    if (!err.statusCode) {
+        err.statusCode = 500;
+    }
+    next(err);
+    });
+});
 
 // router.get('/scan',(req,res,next)=>{
     

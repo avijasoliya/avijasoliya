@@ -20,7 +20,7 @@ const feedbackSchema = new Schema(
             type:String,
             required:true
         }
-    }
+    },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }}
 )
 
 module.exports = mongoose.model('Feedback',feedbackSchema)

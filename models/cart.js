@@ -3,15 +3,15 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 var ItemSchema = new Schema({
   product_id: {
-    type:Schema.Types.ObjectId,
+    type:String,
             ref: 'Product',
   },
   productId:{
-    type:Schema.Types.ObjectId,
+    type:String,
     ref:'Product'
   },
   ingredientId:{
-    type:Schema.Types.ObjectId,
+    type:String,
     ref:'Ingredient'
   },
   priority:{
@@ -35,8 +35,6 @@ var ItemSchema = new Schema({
       required: true,
         }
 });
-
-
 const CartSchema = new Schema({
   email: {
     type: String,
@@ -56,8 +54,6 @@ const CartSchema = new Schema({
         timestamps: true
     }
 );
-
-
 CartSchema.statics = {
   get ({ email } = {}) {
     let condition = { email: email };

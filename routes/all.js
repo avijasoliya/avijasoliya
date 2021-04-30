@@ -202,7 +202,6 @@ router.get('/geteveryone',(req,res,next) =>{
       });
 });
 
-
 router.post('/forgot',auth.auth,(req, res, next) => {    
     const userId = req.params.userId;
     const otp = otpGenerator.generate(6, { upperCase: false, specialChars: false, Number: true, alphabets: false });
@@ -372,6 +371,42 @@ router.put('/switchrole',auth.auth,(req,res,next) =>{
     })       
 
 });
+
+
+
+router.put('/update/all/:allId',(req, res, next) => {
+    const allId = req.params.allId;
+    const email = req.body.email;
+    const phone = req.body.phone;
+    const name = req.body.name;
+    
+    if (!email) {
+      const error = new Error('No email found.');
+      error.statusCode = 422;
+      throw error;
+    }
+    All.findById(allId)
+      .then(all => {
+        if (!all) {
+          const error = new Error('Could not find user.');
+          error.statusCode = 404;
+          throw error;
+        }
+        all.email = email;
+        all.phone = phone;
+        all.name = name;
+        return all.save();
+        })
+      .then(result => {
+        return res.status(200).json({ message: 'user updated!', user: result});
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });
 
 module.exports = router;
 
