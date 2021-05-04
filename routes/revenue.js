@@ -163,7 +163,7 @@ function(err, result) {
   if (err) {
     res.send(err);
   } else {
-    res.json(result);
+    res.json({result:result});
   }
 })
 .catch(error => console.error(error))

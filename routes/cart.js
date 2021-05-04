@@ -10,7 +10,7 @@ const router = express.Router();
 const Ingredient = require('../models/ingredients');
 
 
-router.post('/addtocart/:productId/:ingredientId?',auth.auth,(req, res, next) => {
+router.post('/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, next) => {
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   const product_id = req.params.product_id;
@@ -20,7 +20,7 @@ router.post('/addtocart/:productId/:ingredientId?',auth.auth,(req, res, next) =>
   let productDetails;
   let Ingprice;
 
-  if(ingredientId == undefined){
+  if(ingredientId == undefined){  
     Product.findById(product_id)
     .then(product => {
       if (!product) {
@@ -96,7 +96,8 @@ router.post('/addtocart/:productId/:ingredientId?',auth.auth,(req, res, next) =>
         return cart.save((err,cart)=>{
           Cart.findOne(cart).populate({
         path: " items.product_id"
-      }).exec((err,cart)=> {
+      })
+      .exec((err,cart)=> {
         return res.json({
                     status: 'success',
                     message: "product added in cart successfully",

@@ -372,7 +372,30 @@ router.put('/switchrole',auth.auth,(req,res,next) =>{
 
 });
 
-
+router.delete('/delete/:allId',  (req, res, next) => {
+    const allId = req.params.allId;
+    All.findById(allId)
+      .then(all => {
+        if (!all) {
+          const error = new Error('Could not find user.');
+          error.statusCode = 404;
+          throw error;
+        }
+        return Product.findByIdAndDelete(allId);
+      })      
+      
+      .then(result => {
+        console.log(result);
+        res.status(200).json({ message: 'user removed!!' })
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });
+  
 
 router.put('/update/all/:allId',(req, res, next) => {
     const allId = req.params.allId;

@@ -25,7 +25,6 @@ router.post('/reservation',auth.auth,function(req,res){
                 name:name,
                 table:null,
                 Status:'Finished',
-                restaurantId:restaurantId
             });
             reservation.save()
             .then(result => { 
@@ -38,7 +37,7 @@ router.post('/reservation',auth.auth,function(req,res){
                 sendMessage(reservation,req,res);
             })
             .catch(err => {
-                res.status(500).json({error:err});
+                res.status(500).json(err);
             })
         }
         else {
@@ -63,7 +62,6 @@ router.post('/table',function(req,res){
                 Status:'Available',
                 availableTime:null,
                 waiting:0,
-                restaurantId:restaurantId
 
             });
             tabledetails.save()
@@ -93,7 +91,7 @@ router.post('/table',function(req,res){
 
 
 
-router.post('/tables',(req, res, next) => {
+router.get('/tables',(req, res, next) => {
    let totalItems;
     Table.find()      
       .then(tables => {
@@ -110,7 +108,6 @@ router.post('/tables',(req, res, next) => {
         }
         next(err);
       });
-  
   });
 
 
@@ -237,25 +234,9 @@ router.post('/checkin',auth.auth,function(req,res){
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
     // const restaurantId = req.params.restaurantId;
-
-
-    var buffer = fs.readFileSync('./images' + '/2.png');
-    Jimp.read(buffer, function(err, image) {
-	    if (err) {
-		    console.error(err);
-	    }
-	    let qrcode = new qrCode();
-	    qrcode.callback = function(err, value) {
-		    if (err) {
-			    console.error(err);
-		    }
-		    console.log(value.result);
-	    };
-	    qrcode.decode(image.bitmap);
-    });
-
     // var phone = req.body.phone;
     // var table = req.body.table;
+    const table = req.body.table;
     var requestedtime;
     Reservation.find({phone:phone,Status:'Finished'}).count().then(result =>{
         console.log(" result is " + result);
@@ -343,7 +324,7 @@ Jimp.read(buffer, function(err, image) {
 })
 
 
-router.post('/:restaurantId/checkout',function(req,res){
+router.post('/checkout',function(req,res){
     const phone = req.body.phone;
     const table = req.body.table;
     var Status;
@@ -351,7 +332,7 @@ router.post('/:restaurantId/checkout',function(req,res){
     // Reservation.find({table:table,Status:'Checked In'}).sort({requestedtime:1}).then(result=>{
     //     fphone = result[0].phone;
     // })
-    const restaurantId = req.params.restaurantId;
+    // const restaurantId = req.params.restaurantId;
 
     Reservation.find({phone:phone,Status:'Checked In'}).then(result => {
         console.log(result)
