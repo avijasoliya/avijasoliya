@@ -66,73 +66,73 @@ const auth = require('../middleware/is-auth');
 // });
 
 
-router.post('/revenuedate', (req, res) => {
-  const startdate= req.body.startdate;
-  const enddate= req.body.enddate;
+// router.post('/revenuedate', (req, res) => {
+//   const startdate= req.body.startdate;
+//   const enddate= req.body.enddate;
   
-  Order.aggregate([
+//   Order.aggregate([
   
-  {$project: {_id:null,date:{$dateToString: { format: "%d/%m/%Y", date: "$createdAt"}},grandTotal:1}},
-  {$group : 
-    {_id:{date:"$date"}, Total:{$sum:"$grandTotal"}}
+//   {$project: {_id:null,date:{$dateToString: { format: "%d/%m/%Y", date: "$createdAt"}},grandTotal:1}},
+//   {$group : 
+//     {_id:{date:"$date"}, Total:{$sum:"$grandTotal"}}
     
-  },
-  {$match : {"_id.date" : { "$gte": startdate, "$lte": enddate }}}
-],
-function(err, result) {
-  if (err) {
-    res.send(err);
-  } else {
-    res.json(result);
-  }
-})
-.catch(error => console.error(error))
-});
+//   },
+//   {$match : {"_id.date" : { "$gte": startdate, "$lte": enddate }}}
+// ],
+// function(err, result) {
+//   if (err) {
+//     res.send(err);
+//   } else {
+//     res.json(result);
+//   }
+// })
+// .catch(error => console.error(error))
+// });
 
 
 
-router.post('/revenuemonth', (req, res) => {
-  const dates= req.body.dates;
-  Order.aggregate([
-  {$project: {_id:1,date:{$dateToString: { format: "%m/%Y", date: "$createdAt"}},grandTotal:1}},
-  {$group : 
-    {_id:{date:"$date"}, sum:{$sum:"$grandTotal"}}
-  },
-  {$match : {"_id.date" : dates    }}
-],
-function(err, result) {
-  if (err) {
-    res.send(err);
-  } else {
-    res.json(result);
-  }
-})
-.catch(error => console.error(error))
-});
+// router.post('/revenuemonth', (req, res) => {
+//   const dates= req.body.dates;
+//   Order.aggregate([
+//   {$project: {_id:1,date:{$dateToString: { format: "%m/%Y", date: "$createdAt"}},grandTotal:1}},
+//   {$group : 
+//     {_id:{date:"$date"}, sum:{$sum:"$grandTotal"}}
+//   },
+//   {$match : {"_id.date" : dates    }}
+// ],
+// function(err, result) {
+//   if (err) {
+//     res.send(err);
+//   } else {
+//     res.json(result);
+//   }
+// })
+// .catch(error => console.error(error))
+// });
 
 
 
 
-router.post('/revenueyear', (req, res) => {
-  const years= req.body.years;
+// router.post('/revenueyear', (req, res) => {
+//   const years= req.body.years;
   
-  Order.aggregate([
+//   Order.aggregate([
   
-  {$project: {_id:1,date:{$dateToString: { format: "%Y", date: "$createdAt"}},grandTotal:1}},
-  {$group : 
-    {_id:{date:"$date"}, sum:{$sum:"$grandTotal"}}
-  },
-  {$match : {"_id.date" : years    }}
-],
-function(err, result) {
-  if (err) {
-    res.send(err);
-  } else {
-    res.json(result);
-  }
-})
-.catch(error => console.error(error))
-});
+//   {$project: {_id:1,date:{$dateToString: { format: "%Y", date: "$createdAt"}},grandTotal:1}},
+//   {$group : 
+//     {_id:{date:"$date"}, sum:{$sum:"$grandTotal"}}
+//   },
+//   {$match : {"_id.date" : years    }}
+// ],
+// function(err, result) {
+//   if (err) {
+//     res.send(err);
+//   } else {
+//     res.json(result);
+//   }
+// })
+// .catch(error => console.error(error))
+// });
 
 
 

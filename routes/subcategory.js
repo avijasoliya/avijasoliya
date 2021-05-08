@@ -51,7 +51,7 @@ router.post('/create/:categoryId',(req, res, next) => {
       const subcategory = new Subcategory({
         categoryId : categoryId,
         subcategoryName: subcategoryName,
-        imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+        imageUrl: `http://localhost:8020/${imageUrl}`,
       })
       subcategory.save()
       loadedCategory = category
@@ -120,7 +120,7 @@ router.put('/update/:subcategoryId',(req, res, next) => {
           clearImage(subcategory.imageUrl);
         }
         subcategory.subcategoryName = subcategoryName;
-        subcategory.imageUrl =`http://192.168.0.61:8020/${imageUrl}`;
+        subcategory.imageUrl =`http://localhost:8020/${imageUrl}`;
         return subcategory.save();
       })
       .then(result => {

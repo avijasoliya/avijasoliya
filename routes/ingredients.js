@@ -17,7 +17,7 @@ router.post('/addingredient', (req,res,next) =>{
     let creator;
     const ingredient = new Ingredient({
       IngredientName: IngredientName,
-      imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+      imageUrl: `http://localhost:8020/${imageUrl}`,
       price:price,
       description: description,
       creator: {name:'Manager'}
@@ -116,7 +116,7 @@ router.put('/update/:ingredientId',(req, res, next) => {
           clearImage(ingredient.imageUrl);
         }
         ingredient.IngredientName = IngredientName;
-        ingredient.imageUrl =`http://192.168.0.133:8080/${imageUrl}`;
+        ingredient.imageUrl =`http://localhost192:8080/${imageUrl}`;
         ingredient.description = description;
         return ingredient.save();
       })

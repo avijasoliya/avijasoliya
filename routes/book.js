@@ -77,9 +77,9 @@ router.post('/table',function(req,res){
                 res.status(201).json({
                     message:"created successfully",
                     createdTable:tabledetails,
-                    QRCode:'http://192.168.0.61:8020/images/'+`${table}`+ '.png'
+                    QRCode:'http://localhost:8020/images/'+`${table}`+ '.png'
                 }); 
-                tabledetails.QRCode = `http://192.168.0.61:8020/images/`+`${table}`+`.png`
+                tabledetails.QRCode = `http://localhost:8020/images/`+`${table}`+`.png`
                 tabledetails.save();
                 res.render("qr");
             }).catch(err => {

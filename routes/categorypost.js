@@ -40,7 +40,7 @@ router.post('/create', (req, res, next) => {
     let creator;
     const category = new Category({
       categoryName: categoryName,
-      imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+      imageUrl: `http://localhost:8020/${imageUrl}`,
       creator: {name:'Manager'}
     });
     category
@@ -104,7 +104,7 @@ router.put('/update/:categoryId',(req, res, next) => {
           clearImage(category.imageUrl);
         }
         category.categoryName = categoryName;
-        category.imageUrl = `http://192.168.0.61:8020/${imageUrl}`;
+        category.imageUrl = `http://localhost:8020/${imageUrl}`;
         return category.save();
       })
       .then(result => {

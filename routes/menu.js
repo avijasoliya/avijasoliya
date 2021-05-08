@@ -59,7 +59,7 @@ router.get('/menues',(req, res, next) => {
           description:description,
           originalPrice:originalPrice,
           offerPrice:originalPrice,
-          imageUrl: `http://192.168.0.61:8020/${imageUrl}`,
+          imageUrl: `http://localhost:8020/${imageUrl}`,
         })
         product.save();
         loadedCategory = category
@@ -125,7 +125,7 @@ router.put('/update/:productId',(req, res, next) => {
       const LoadedPrices = product.originalPrice - offers;
       product.offerPrice = LoadedPrices;
       product.name = name;
-      product.imageUrl = `http://192.168.0.61:8020/${imageUrl}`;
+      product.imageUrl = `http://localhost:8020/${imageUrl}`;
       product.offer = offer;
       product.description = description;
       return product.save();
