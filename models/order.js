@@ -6,10 +6,24 @@ var ItemSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
+  product_id: {
+    type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+  },
   ingredientId:{
     type:Schema.Types.ObjectId,
     ref:'Ingredient'
   },
+  categoryId:{
+    type:String,
+    ref:'Category'
+  },
+  progress:{
+    type:String,
+    default:"Pending"
+  },
+  itemAcceptedAt:{type:Date},
+  itemDoneAt:Date,
   qty: {
     type: Number,
     required: true,
@@ -55,6 +69,10 @@ const OrderSchema = new Schema({
     userId:{
       type:Schema.Types.ObjectId,
       ref:'User'
+    },
+    tableId:{
+      type:Schema.Types.ObjectId,
+      ref:'Table'
     },
     grandTotal: {
       default: 0,

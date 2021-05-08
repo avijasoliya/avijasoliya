@@ -9,6 +9,8 @@ const otpGenerator = require('otp-generator');
 const OTP = require('../models/otp');
 const jwt = require('jsonwebtoken');
 const otp = otpGenerator.generate(6, { upperCase: false, specialChars: false, Number: true, alphabets: false });
+
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

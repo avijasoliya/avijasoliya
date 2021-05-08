@@ -4,7 +4,7 @@ const Cart = require('../models/cart');
 const Product = require('../models/menu');
 const cart = require('../models/cart');
 const All = require('../models/all')
-
+const Table = require('../models/table')
 const auth = require('../middleware/is-auth');
 
 const router = express.Router();
@@ -63,11 +63,10 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
   });
 });
 
-
 router.put('/waiter/makeorder',(req,res,next) =>{
-  const email = req.body.email;
-  const phone = req.body.phone;
   const name = req.body.name;
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
   var loadedUser;
@@ -82,6 +81,7 @@ router.put('/waiter/makeorder',(req,res,next) =>{
       loadedUser = all;
       return Cart.findOne({email})
     }
+    
   })    
   .then(cart=>{
       if(!cart){
@@ -96,12 +96,15 @@ router.put('/waiter/makeorder',(req,res,next) =>{
         paymentMethod: paymentMethod,
         email:email,
         grandTotal: subTotal,
-        // userId:id,
+        userId:id,
         items: loadedCart
     })
     order.save();      
     loadedUser.orders.push(order);
-    loadedUser.save();    
+    loadedUser.save();
+    // console.log(loadedUser)
+    
+    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })
@@ -117,12 +120,51 @@ router.put('/waiter/makeorder',(req,res,next) =>{
   });
 });
 
-router.get('/getorder/:orderId',(req,res,next) =>{
+router.post('/current',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
+  Order.find({email}).populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
+  .then(order =>{
+    // console.log(order)
+    order.forEach(order=>{
+      // console.log(order)
+      if(order.OrderIs == "Pending"){
+        // console.log(order)
+        return res.status(200).json({message:"Here's your order",order:order})
+      }
+      else if(order.OrderIs == "In Progress"){
+        return res.status(200).json({message:"Here's your order",order:order})
+      }
+      else if(order.OrderIs == "Done"){
+        return res.status(200).json({message:"Here's your order",order:order})
+      }
+    })
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+  
+}
+);
+
+router.get('/getorder/:orderId', (req,res,next) =>{
   const orderId = req.params.orderId;
-  Order.findById(orderId).populate({path:"items",populate:{
-    path: "productId"
-  }
-})
+  Order.findById(orderId).populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
   .then(order=>{
       if(!order){
           return res.status(404).json({message:"please make an order first :)"})
@@ -142,15 +184,18 @@ router.get('/getorders',(req, res, next) => {
   const CurrentPage = req.query.page || 1;
   const perPage = 20;
   let totalItems;
-  Order.find().populate({path:"items",populate:{
-    path: "productId"
-  }
-})
+  Order.find().populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
     .countDocuments()
     .then(count => {
       totalItems = count;
       return Order.find().populate({path:"items",populate:{
-        path: "productId"
+        path: "product_id"
       }
     })
         .skip((CurrentPage - 1) * perPage)
@@ -176,8 +221,16 @@ router.get('/myorders',auth.auth,(req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   All.findOne({email}).populate({path:"orders",populate:{
-    path: "items.productId"
+    path: "items.product_id"
   }
+})
+.populate({path:"orders",populate:{
+  path: "items.categoryId"
+}
+})
+.populate({path:"orders",populate:{
+  path: "items.ingredientId"
+}
 })
   .then(all=>{
     if(!all){
@@ -198,13 +251,21 @@ router.get('/myorders',auth.auth,(req,res,next) =>{
 router.put('/receive/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
   Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
   .then(order=>{
       if(!order){
           return res.status(404).json({message:"please make an order first :)"})
       }
       order.OrderIs='In Progress';
+      order.OrderReceivedAt = Date.now();
       order.save();
-      return res.status(200).json({message:"your orders has been received...please wait till we make it ready for you" });
+      return res.status(200).json({message:"your orders has been received...please wait till we make it ready for you" , order:order });
   })
   .catch(err => {
     if (!err.statusCode) {
@@ -214,10 +275,15 @@ router.put('/receive/:orderId',(req,res,next) =>{
   });
 });
 
-router.post('/list', (req,res,next) =>{
+router.post('/list',  (req,res,next) =>{
   const OrderIs = req.body.OrderIs;
-
-  Order.find({OrderIs})
+  Order.find({OrderIs}).populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
   .then(orders=>{
     return res.status(200).json({message:'Here is the list you asked for', list:orders})
   })
@@ -227,7 +293,8 @@ router.post('/list', (req,res,next) =>{
     }
     next(err);
   });
-});
+}
+);
 
 router.put('/cancel/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
@@ -257,10 +324,7 @@ router.put('/cancel/:orderId',(req,res,next) =>{
     }
     next(err);
   });
-}
-
-
-);
+});
 
 router.put('/setdiscount/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
@@ -273,7 +337,7 @@ router.put('/setdiscount/:orderId',(req,res,next) =>{
     const offer = (order.grandTotal)/100 * discount;
     order.grandTotal = order.grandTotal - offer ;
     order.save();
-    return res.status(200).json({message:"Sorry for the difficulties...here let us help you with your order",order:order});
+    return res.status(200).json({message:"Sorry for the difficulties...here,let us help you with your order",order:order});
   })
   .catch(err => {
     if (!err.statusCode) {
@@ -281,19 +345,28 @@ router.put('/setdiscount/:orderId',(req,res,next) =>{
     }
     next(err);
   });
-})
+}
+)
 
 router.put('/done/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
   Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
   .then(order =>{
     if(!order){
       return res.status(404).json({message:"There are no such orders"});
     }
     else{
       order.OrderIs = "Done";
+      order.OrderDoneAt = Date.now();
       order.save();
-      return res.status(200).json({message:"Order is done and is on it's way to you."})
+      return res.status(200).json({message:"Order is done and is on it's way to you.", order:order})
     }
   })
   .catch(err => {
@@ -309,11 +382,23 @@ router.delete('/delete',(req, res, next) => {
   token = token.split(' ')[1];
   const orderId = req.params.orderId;
   Order.findOne({ email })
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
   .then(order=>{
     if(!order){
-        return res.status(404).json('Order does not exist')
+        return res.status(404).json({message:'Order does not exist'});
     }
+    else if(order.OrderIs == "Pending"){
     order.remove()
+    }
+    else{
+      return res.status(500).json({message:'You can not delete this order now!!'});
+    }
   })
   // Order.findById(orderId)
     
@@ -326,7 +411,202 @@ router.delete('/delete',(req, res, next) => {
     });
 });
 
+router.get('/bycatid/:categoryId/:orderId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  const categoryId = req.params.categoryId;
+  var products =[]; 
+  Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  })
+  .then(Order=>{
+    if(!Order){
+      return res.status(404).json({message:"there are no such orders"})
+    }    
+    products = Order.items;
+    // console.log(products)
+    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    return res.status(200).json({message:"the item you need to make is :" , item: results})
+  }) 
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
 
+router.put('/acceptbycatid/:categoryId/:orderId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  const categoryId = req.params.categoryId;
+  var products =[]; 
+  Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  })
+  .then(Order=>{
+    if(!Order){
+      return res.status(404).json({message:"there are no such orders"})
+    }    
+    products = Order.items;
+    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    results[0].progress ="In Progress";
+    results[0].itemAcceptedAt = Date.now();
+    Order.save();
+    return res.status(200).json({message:"the item you accepted to make is :" , item: results})
+  }) 
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
 
+router.put('/donebycatid/:categoryId/:orderId', (req,res,next) =>{
+  const orderId = req.params.orderId;
+  const categoryId = req.params.categoryId;
+  var products =[]; 
+  Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  })
+  .then(Order=>{
+    if(!Order){
+      return res.status(404).json({message:"there are no such orders"})
+    }    
+    products = Order.items;
+    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    results[0].progress ="Done";
+    results[0].itemDoneAt = Date.now()
+    Order.save();
+    return res.status(200).json({message:"Done item :" , item: results})
+  }) 
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+router.put('/cancelbycatid/:categoryId/:orderId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  const categoryId = req.params.categoryId;
+  var products =[]; 
+  let loadedProduct1;
+  let loadedProduct;
+  Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  })
+  .then(Order=>{
+    if(!Order){
+      return res.status(404).json({message:"there are no such orders"})
+    }    
+    products = Order.items;
+    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    results[0].progress ="Unavailable";
+    loadedProduct1 = results[0].product_id;
+    Order.save();
+    // res.status(200).json({message:"the item you accepted to make is :" , item: results})
+    return Product.findById(loadedProduct1);
+  }) 
+  .then(product=>{
+    if(!product){
+      return res.status(404).json({message:'There are no such products'});
+    }
+    else {
+      loadedProduct = product  ;
+      loadedProduct.availability = false;
+      loadedProduct.save();
+      console.log('The process of making an item available has been started....')
+      var job = new CronJob('1 * * * * *', function() {
+        loadedProduct.availability = true;
+        loadedProduct.save();         
+        console.log(loadedProduct.availability);
+    }, null, true, 'America/Los_Angeles');
+    job.start();
+    return res.status(200).json({message:"The product you made unavailable is ",product:product})
+  }})
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+router.put('/serve/:orderId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  Order.findById(orderId)
+  .populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
+    .then(order=>{
+        if(!order){
+            return res.status(404).json({message:"There are no such order"})
+        }
+        order.OrderIs='Served';
+        order.OrderServedAt = Date.now();
+        order.save();
+        return res.status(200).json({message:"Order has been served" ,order:order});
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+
+});
+
+router.get('/howlong/:orderId', (req,res,next) =>{
+  const orderId = req.params.orderId;
+  let days;
+  let hours;
+  let minutes;
+  let seconds;
+  Order.findById(orderId)
+  .then(order=>{
+    if(!order){
+      return res.status(404).json({message:"There are no such order!"})
+    }
+    else {
+    let Date1 = order.OrderReceivedAt
+    let Date2 = order.OrderDoneAt
+    let Date3 = order.OrderServedAt
+    let res = (Date2 - Date1) / 1000;
+    let res1 = (Date3 - Date2) / 1000;
+    // var days = Math.floor(res / 86400);  
+    // var hours = Math.floor(res / 3600) % 24;
+    // var minutes = Math.floor(res / 60) % 60;
+    hours = Math.floor(res / 3600) % 24;
+    minutes = Math.floor(res / 60) % 60;
+    minute = Math.floor(res1 / 60) % 60;
+    seconds =Math.floor (res % 60);
+    second = Math.floor (res1 % 60);
+    }
+    return res.status(200).json({message:`The time it took for cook to make the order was${hours} : ${minutes} hours and ${seconds} seconds.......Also it took ${minute} minutes and ${second} seconds for waiter to deliver it.`});
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
 
 module.exports = router;

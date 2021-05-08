@@ -52,10 +52,10 @@ router.set("view engine","ejs");
 router.post('/table',function(req,res){
     // const restaurantId = req.params.restaurantId;
     Table.find({table:req.body.table}).then(result => {
-        // if(result.length > 0){
-        //     res.status(500).json({message:'Table Exists with same id !!! Please use a different id'});
-        // }
-        // else {
+        if(result.length > 0){
+            res.status(500).json({message:'Table Exists with same id !!! Please use a different id'});
+        }
+        else {
             const  tabledetails  =  new  Table ( {
                 table:req.body.table,
                 size:req.body.size,
@@ -85,7 +85,7 @@ router.post('/table',function(req,res){
             }).catch(err => {
                 res.status(500).json({error:err});
             })
-        // }
+        }
     })
 });
 
