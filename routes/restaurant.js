@@ -137,7 +137,7 @@ router.delete('/delete/:restaurantId',(req,res,next) =>{
     })
 });
 
-router.put('/getrestaurants',(req,res,next) =>{
+router.get('/getrestaurants',(req,res,next) =>{
     const activity = req.body.activity;
     const CurrentPage = req.query.page || 1;
     const perPage = 10;

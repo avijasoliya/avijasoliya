@@ -248,7 +248,7 @@ router.post('/forgot',auth.auth,(req, res, next) => {
             })
 });
 
-router.get('/get',(req,res,next) =>{
+router.post('/get',(req,res,next) =>{
     const activerole = req.body.activerole;
     All.find({activerole:activerole})
         .then(all=>{
