@@ -66,6 +66,9 @@ const OrderSchema = new Schema({
         'The value of path {PATH} ({VALUE}) is not a valid email address.'
       ]
     },
+    table:{
+      type:String,
+    },
     userId:{
       type:Schema.Types.ObjectId,
       ref:'User'

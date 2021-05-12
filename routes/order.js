@@ -45,7 +45,7 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
         userId:id,
         items: loadedCart
     })
-    order.save();      
+    order.save();
     loadedUser.orders.push(order);
     loadedUser.save();    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
@@ -64,12 +64,24 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
 });
 
 router.put('/waiter/makeorder',(req,res,next) =>{
+  const email = req.body.email;
   const name = req.body.name;
-  let token = req.headers['authorization'];
-  token = token.split(' ')[1];
-  const paymentMethod = req.body.paymentMethod;  
+  const paymentMethod = req.body.paymentMethod; 
+  const table = req.body.table; 
   let loadedCart;
   var loadedUser;
+  Table.findOne({table})
+  .then(table=>{
+    if(!table){
+      const error = new Error('There are no such table!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedTable = table;
+      return Table.findOne({table})
+    }
+  })
   All.findOne({email})
   .then(all=>{
     if(!all){
@@ -81,7 +93,6 @@ router.put('/waiter/makeorder',(req,res,next) =>{
       loadedUser = all;
       return Cart.findOne({email})
     }
-    
   })    
   .then(cart=>{
       if(!cart){
@@ -96,12 +107,15 @@ router.put('/waiter/makeorder',(req,res,next) =>{
         paymentMethod: paymentMethod,
         email:email,
         grandTotal: subTotal,
-        userId:id,
-        items: loadedCart
+        items: loadedCart,
+        table: table
     })
     order.save();      
     loadedUser.orders.push(order);
     loadedUser.save();
+    loadedTable.orders.push(order);
+    loadedTable.save();
+    
     // console.log(loadedUser)
     
     
@@ -120,7 +134,7 @@ router.put('/waiter/makeorder',(req,res,next) =>{
   });
 });
 
-router.put('/parcel/makeorder',(req,res,next) =>{
+router.put('/parcel/makeorder',auth.auth,(req,res,next) =>{
   const name = req.body.name;
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
@@ -138,7 +152,6 @@ router.put('/parcel/makeorder',(req,res,next) =>{
       loadedUser = all;
       return Cart.findOne({email})
     }
-    
   })    
   .then(cart=>{
       if(!cart){
@@ -156,12 +169,9 @@ router.put('/parcel/makeorder',(req,res,next) =>{
         userId:id,
         items: loadedCart
     })
-    order.save();      
+    order.save();
     loadedUser.orders.push(order);
-    loadedUser.save();
-    // console.log(loadedUser)
-    
-    
+    loadedUser.save();    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })
@@ -258,6 +268,28 @@ router.get('/getorders',(req, res, next) => {
         .skip((CurrentPage - 1) * perPage)
         .limit(perPage)
     })
+    .then(orders => {
+      res.status(200)
+        .json({
+          message: 'Fetched orders Successfully',
+          orders: orders,
+          totalItems: totalItems
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });  
+});
+
+router.post('/getorders/table',(req, res, next) => {
+  const table = req.body.table;
+  // const CurrentPage = req.query.page || 1;
+  // const perPage = 20;
+  let totalItems;
+  Order.findOne({table})
     .then(orders => {
       res.status(200)
         .json({

@@ -446,7 +446,9 @@ All.findOne({email}).populate({
     })
 }})
 
-router.post('/parcel/addtocart/:productId/:ingredientId?',(req, res, next) => {
+router.post('/parcel/addtocart/:productId/:ingredientId?',auth.auth,(req, res, next) => {
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const email = req.body.email;
   var productId = req.params.productId;
   var ingredientId = req.params.ingredientId;
@@ -466,10 +468,10 @@ router.post('/parcel/addtocart/:productId/:ingredientId?',(req, res, next) => {
       productDetails = product.offerPrice;
     })
 
-All.findOne({email}).populate({
-  path: "items.productId",
-  select: "name price description imageUrl "
-})
+    All.findOne({email}).populate({
+      path: "items.productId",
+      select: "name price description imageUrl "
+    })
     .then(all=>{
       if(!all){
         return res.status(403).json({message:'Register yourself first,will ya?!'})
