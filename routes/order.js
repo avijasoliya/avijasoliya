@@ -185,8 +185,7 @@ router.put('/parcel/makeorder',auth.auth,(req,res,next) =>{
     }
     next(err);
   });
-});
-
+})
 router.post('/current',auth.auth,(req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
@@ -286,8 +285,8 @@ router.get('/getorders',(req, res, next) => {
 
 router.post('/getorders/table',(req, res, next) => {
   const table = req.body.table;
-  // const CurrentPage = req.query.page || 1;
-  // const perPage = 20;
+  const CurrentPage = req.query.page || 1;
+  const perPage = 20;
   let totalItems;
   Order.findOne({table})
     .then(orders => {

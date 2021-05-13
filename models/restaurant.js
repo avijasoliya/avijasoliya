@@ -8,7 +8,7 @@ const restaurantSchema = new Schema({
   },
   activity:{
     type:Boolean,
-    default:null
+    default:true
   },
   ActivatedAt:{
     type:Date

@@ -140,7 +140,7 @@ router.delete('/delete/:tableId', (req, res, next) => {
 router.get('/reservations',function(req,res){
     // const restaurantId = req.params.restaurantId;
 
-    Reservation.find({Status:{'$ne':'Finished'}}).sort({requestedtime:1}).then(result =>{
+    Reservation.find({Status:'Finished'}).sort({requestedtime:1}).then(result =>{
         if (result.length == 0){
             res.status(500).json({error: 'No Current Reservations'})
         }

@@ -1,22 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const Restaurant = require('../models/restaurant')
-const Payment = require
+const CronJob = require('cron').CronJob;
 
 
 
 
 router.post('/addresto',(req,res,next) =>{
     const RestaurantName = req.body.RestaurantName;
+    let loadedRestaurant;
     const resto = new Restaurant({
         RestaurantName:RestaurantName
     })
+        loadedRestaurant = resto;
+        console.log('The process of making an restaurant available has been started....')
+        var job = new CronJob('* * * * * 1', function() {
+        loadedRestaurant.activity = false;
+        loadedRestaurant.save();         
+        console.log(loadedRestaurant.activity);
+    }, null, false, 'America/Los_Angeles');
+    job.start();
     resto.save();
-    console.log(resto);
-    return res.status(201).json({message:"Restaurant created!" , RestaurantId : resto._id})
 
-
-
+    return res.status(200).json({message:"Restaurant created!" , RestaurantId : resto._id,message:"restaurant is available for the moment can you choose another one", restaurnat:resto})
 });
 
 
@@ -269,6 +275,34 @@ router.post('/makepayment/:restaurantId',(req,res,next) =>{
 });
 
 
+router.put('/itemunavailable/:restaurantId',(req,res,next) =>{
+    const restaurantId = req.params.restaurantId;
+    let loadedRestaurant;
+    Restaurant.findById(restaurantId)
+      .then(restaurant=>{
+        if(!restaurant){
+          return res.status(404).json({message:'There are no such restaurant'});
+        }
+        else {
+            loadedRestaurant = restaurant;
+            loadedRestaurant.activity = true;
+            loadedRestaurant.save();
+          console.log('The process of making an item available has been started....')
+          var job = new CronJob('1 * * * * *', function() {
+            loadedRestaurant.activity = false;
+            loadedRestaurant.save();         
+            console.log(loadedRestaurant.activity);
+        }, null, false, 'America/Los_Angeles');
+        job.start();
+        return res.status(200).json({message:"restaurant is available for the moment can you choose another one", restaurnat:restaurant})
+      }})
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  })
 
 
 
