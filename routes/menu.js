@@ -36,49 +36,44 @@ router.get('/menues',(req, res, next) => {
 
 });
 
+router.post('/create/:categoryId',(req, res, next) => {
+  const restaurantId = req.params.restaurantId;
+  const categoryId = req.params.categoryId;
+  const name = req.body.name;
+  const description = req.body.description;
+  const imageUrl = req.file.path;
+  let loadedcategory;
+  const originalPrice = req.body.originalPrice;
 
-
-  router.post('/create/:categoryId',(req, res, next) => {
-    const restaurantId = req.params.restaurantId;
-    const categoryId = req.params.categoryId;
-    const name = req.body.name;
-    const description = req.body.description;
-    const imageUrl = req.file.path;
-    let loadedcategory;
-    const originalPrice = req.body.originalPrice;
-  
-      Category.findById(req.params.categoryId)
-      .then(category=>{
-        if(!category){
-          const error = new Error("product not found")
-          throw error;
+    Category.findById(req.params.categoryId)
+    .then(category=>{
+      if(!category){
+        const error = new Error("product not found")
+        throw error;
+      }
+      const product = new Product({
+        categoryId : categoryId,
+        name:name,
+        description:description,
+        originalPrice:originalPrice,
+        offerPrice:originalPrice,
+        imageUrl: `http://localhost:8020/${imageUrl}`,
+      })
+      product.save();
+      loadedCategory = category
+      category.products.push(product)
+      return category.save();
+    })
+    .then(result => {
+      res.status(201).json({message: 'Product created successfully!'});
+    })
+      .catch(err => {
+        if (!err.statusCode) {       
+          err.statusCode = 500;
         }
-        const product = new Product({
-          categoryId : categoryId,
-          name:name,
-          description:description,
-          originalPrice:originalPrice,
-          offerPrice:originalPrice,
-          imageUrl: `http://localhost:8020/${imageUrl}`,
-        })
-        product.save();
-        loadedCategory = category
-        category.products.push(product)
-        return category.save();
-      })
-      .then(result => {
-        res.status(201).json({message: 'Product created successfully!'});
-      })
-        .catch(err => {
-          if (!err.statusCode) {       
-            err.statusCode = 500;
-          }
-          next(err);
-        });
-  });
-  
-  
-
+        next(err);
+      });
+});
 
 router.get('/get/:productId',(req, res, next) => {
   const productId = req.params.productId;
@@ -211,101 +206,101 @@ router.get('/menu/name', async (req, res, next)=> {
 })
 
 
-  router.get('/menu/:categoryId', (req, res, next)=> {
-    const categoryId = req.params.categoryId;
-    let loadedProduct;
-  
-    Product.find({categoryId})
-    .then(product => {
-      console.log(product);
-      if (product) {
-        return res.status(200).json({ message: 'Here is your menu.', products: product });
-  
+router.get('/menu/:categoryId', (req, res, next)=> {
+  const categoryId = req.params.categoryId;
+  let loadedProduct;
+
+  Product.find({categoryId})
+  .then(product => {
+    console.log(product);
+    if (product) {
+      return res.status(200).json({ message: 'Here is your menu.', products: product });
+
+    }
+    else if (product.availability == 'available'){
+      return res.status(200).json({ message: 'Here is your menu.', product: product });
+    }
+    
+    })    
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
       }
-      else if (product.availability == 'available'){
-        return res.status(200).json({ message: 'Here is your menu.', product: product });
+      next(err);
+    });    
+})
+
+
+router.put('/available/:productId',(req,res,next) =>{
+  const productId = req.params.productId;
+  Product.findById(productId)
+    .then(product=>{
+      if(!product){
+        return res.status(404).json({message:'There are no such product'});
       }
-      
-      })    
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });    
-  })
-
-
-  router.put('/available/:productId',(req,res,next) =>{
-    const productId = req.params.productId;
-    Product.findById(productId)
-      .then(product=>{
-        if(!product){
-          return res.status(404).json({message:'There are no such product'});
-        }
-        product.availability = 'available';
-        product.save();
-        return res.status(200).json({message:'Product is now available'});
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  })
+      product.availability = 'available';
+      product.save();
+      return res.status(200).json({message:'Product is now available'});
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+})
 
 
 
-  router.put('/unavailable/:productId', (req,res,next) =>{
-    const productId = req.params.productId;
-    Product.findById(productId)
-      .then(product=>{
-        if(!product){
-          return res.status(404).json({message:'There are no such products'});
-        }
-        else {product.availability = "unavailable";
-        // console.log(product.availability);
-        product.save();
-        return res.status(200).json({message:"Product is unavailable for the moment can you choose another one", product:product})
-      }})
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  })
+router.put('/unavailable/:productId', (req,res,next) =>{
+  const productId = req.params.productId;
+  Product.findById(productId)
+    .then(product=>{
+      if(!product){
+        return res.status(404).json({message:'There are no such products'});
+      }
+      else {product.availability = "unavailable";
+      // console.log(product.availability);
+      product.save();
+      return res.status(200).json({message:"Product is unavailable for the moment can you choose another one", product:product})
+    }})
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+})
 
 
-  router.put('/itemunavailable/:productId',(req,res,next) =>{
-    const productId = req.params.productId;
-    let loadedProduct;
-    Product.findById(productId)
-      .then(product=>{
-        if(!product){
-          return res.status(404).json({message:'There are no such products'});
-        }
-        else {
-          loadedProduct = product  ;
-          loadedProduct.availability = false;
-          loadedProduct.save();
-          console.log('The process of making an item available has been started....')
-          var job = new CronJob('1 * * * * *', function() {
-            loadedProduct.availability = true;
-            loadedProduct.save();         
-            console.log(loadedProduct.availability);
-        }, null, true, 'America/Los_Angeles');
-        job.start();
-        return res.status(200).json({message:"Product is unavailable for the moment can you choose another one", product:product})
-      }})
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  })
+router.put('/itemunavailable/:productId',(req,res,next) =>{
+  const productId = req.params.productId;
+  let loadedProduct;
+  Product.findById(productId)
+    .then(product=>{
+      if(!product){
+        return res.status(404).json({message:'There are no such products'});
+      }
+      else {
+        loadedProduct = product  ;
+        loadedProduct.availability = false;
+        loadedProduct.save();
+        console.log('The process of making an item available has been started....')
+        var job = new CronJob('1 * * * * *', function() {
+          loadedProduct.availability = true;
+          loadedProduct.save();         
+          console.log(loadedProduct.availability);
+      }, null, true, 'America/Los_Angeles');
+      job.start();
+      return res.status(200).json({message:"Product is unavailable for the moment can you choose another one", product:product})
+    }})
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+})
   
 const clearImage = filePath => {
   filePath = path.join(__dirname, '..', filePath);

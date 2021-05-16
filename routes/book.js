@@ -233,10 +233,24 @@ Table.findById(tableId)
 router.post('/checkin',auth.auth,function(req,res){
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
+    var buffer = fs.readFileSync('./images' + '/2.png');
+    const qr1 = Jimp.read(buffer, function(err, image) {
+        if (err) {
+            console.error(err);
+        }
+        let qrcode = new qrCode();
+        qrcode.callback = function(err, value) {
+            if (err) {
+                console.error(err);
+            }
+            console.log(value.result);
+        };
+        qrcode.decode(image.bitmap);
+    });
     // const restaurantId = req.params.restaurantId;
     // var phone = req.body.phone;
-    // var table = req.body.table;
-    const table = req.body.table;
+    var table = req.body.table;
+    // const table = req.params.table;
     var requestedtime;
     Reservation.find({phone:phone,Status:'Finished'}).count().then(result =>{
         console.log(" result is " + result);

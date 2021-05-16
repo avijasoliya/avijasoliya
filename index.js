@@ -22,9 +22,10 @@ const allRoutes = require('./routes/all');
 const complaintRoutes = require('./routes/complaint');
 const restoRoutes = require('./routes/restaurant');
 const ingredientsRoutes = require('./routes/ingredients');
+const offerRoutes = require('./routes/offer');
 
 const app = express();
-const app1 = express();
+// const app1 = express();
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -91,6 +92,7 @@ app.use('/revenue',revenueRoutes)
 app.use('/restaurant',restoRoutes)
 app.use('/home',homeRoutes)
 app.use('/ingredients',ingredientsRoutes)
+app.use('/offer',offerRoutes)
 
 
 app.use(session({

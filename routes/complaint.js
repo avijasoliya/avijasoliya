@@ -36,7 +36,7 @@ router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
        loadedAll.complaints.push(complaint);
        loadedAll.save();
       //  console.log(loadedAll)
-       return res.status(200).json({message:'complaint saved!',complaint:complaint});
+       return res.status(200).json({message:'Thank you for your complaint!..',complaint:complaint});
    })
    .catch(err => {
        if (!err.statusCode) {
