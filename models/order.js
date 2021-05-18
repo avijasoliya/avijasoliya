@@ -22,6 +22,11 @@ var ItemSchema = new Schema({
     type:String,
     default:"Pending"
   },
+  notes:String,
+  ToKitchen:{
+    type:Boolean,
+    default:false
+  },
   itemAcceptedAt:{type:Date},
   itemDoneAt:Date,
   qty: {
@@ -45,7 +50,6 @@ var ItemSchema = new Schema({
         }
 });
 const CartSchema = new Schema({
-  
   items: [ItemSchema]
 },{
         timestamps: true

@@ -27,7 +27,7 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
     else{
       loadedUser = all;
       return Cart.findOne({email})
-    }
+    } 
   })    
   .then(cart=>{
       if(!cart){
@@ -45,7 +45,7 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
         userId:id,
         items: loadedCart
     })
-    order.save();
+    order.save();      
     loadedUser.orders.push(order);
     loadedUser.save();    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
@@ -186,7 +186,7 @@ router.put('/parcel/makeorder',auth.auth,(req,res,next) =>{
     next(err);
   });
 })
-router.post('/current',auth.auth,(req,res,next) =>{
+router.post('/current',auth.auth, (req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   Order.find({email}).populate({
@@ -219,8 +219,7 @@ router.post('/current',auth.auth,(req,res,next) =>{
     next(err);
   });
   
-}
-);
+});
 
 router.get('/getorder/:orderId', (req,res,next) =>{
   const orderId = req.params.orderId;
@@ -334,9 +333,10 @@ router.get('/myorders',auth.auth,(req,res,next) =>{
     }
     next(err);
   });
-});
+}
+);
 
-router.put('/receive/:orderId',(req,res,next) =>{
+router.put('/receive/:orderId', (req,res,next) =>{
   const orderId = req.params.orderId;
   Order.findById(orderId)
   .populate({
@@ -381,8 +381,7 @@ router.post('/list',  (req,res,next) =>{
     }
     next(err);
   });
-}
-);
+});
 
 router.put('/cancel/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
@@ -412,7 +411,8 @@ router.put('/cancel/:orderId',(req,res,next) =>{
     }
     next(err);
   });
-});
+}
+);
 
 router.put('/setdiscount/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
@@ -499,7 +499,7 @@ router.delete('/delete',(req, res, next) => {
     });
 });
 
-router.get('/bycatid/:categoryId/:orderId',(req,res,next) =>{
+router.get('/bycatid/:orderId',(req,res,next) =>{
   const orderId = req.params.orderId;
   const categoryId = req.params.categoryId;
   var products =[]; 
@@ -526,22 +526,36 @@ router.get('/bycatid/:categoryId/:orderId',(req,res,next) =>{
   });
 });
 
-router.put('/acceptbycatid/:categoryId/:orderId',(req,res,next) =>{
+router.put('/acceptbycatid/:orderId',(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const orderId = req.params.orderId;
   const categoryId = req.params.categoryId;
   var products =[]; 
-  Order.findById(orderId)
-  .populate({
-    path: "items.product_id"
-  }).populate({
-    path: "items.ingredientId"
-  })
+  var loadedCategory;
+  All.findOne({email})
+  .then(all=>{
+    if(!all){
+      const error = new Error("There are no such persons!!");
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedCategory = all.categoryId;
+      return Order.findById(orderId)
+      .populate({
+        path: "items.product_id"
+      }).populate({
+        path: "items.ingredientId"
+      })
+    }
+  })  
   .then(Order=>{
     if(!Order){
       return res.status(404).json({message:"there are no such orders"})
     }    
     products = Order.items;
-    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    const results = products.filter(item => item.categoryId === `${loadedCategory}`);
     results[0].progress ="In Progress";
     results[0].itemAcceptedAt = Date.now();
     Order.save();
@@ -555,22 +569,36 @@ router.put('/acceptbycatid/:categoryId/:orderId',(req,res,next) =>{
   });
 });
 
-router.put('/donebycatid/:categoryId/:orderId', (req,res,next) =>{
+router.put('/donebycatid/:orderId',  (req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const orderId = req.params.orderId;
   const categoryId = req.params.categoryId;
+  var loadedCategory;
   var products =[]; 
-  Order.findById(orderId)
-  .populate({
-    path: "items.product_id"
-  }).populate({
-    path: "items.ingredientId"
-  })
+  All.findOne({email})
+  .then(all=>{
+    if(!all){
+      const error = new Error("There are no such persons!!");
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedCategory = all.categoryId;
+      return Order.findById(orderId)
+      .populate({
+        path: "items.product_id"
+      }).populate({
+        path: "items.ingredientId"
+      })
+    }
+  })  
   .then(Order=>{
     if(!Order){
       return res.status(404).json({message:"there are no such orders"})
     }    
     products = Order.items;
-    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    const results = products.filter(item => item.categoryId === `${loadedCategory}`);
     results[0].progress ="Done";
     results[0].itemDoneAt = Date.now()
     Order.save();
@@ -584,24 +612,38 @@ router.put('/donebycatid/:categoryId/:orderId', (req,res,next) =>{
   });
 });
 
-router.put('/cancelbycatid/:categoryId/:orderId',(req,res,next) =>{
+router.put('/cancelbycatid/:orderId',(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const orderId = req.params.orderId;
   const categoryId = req.params.categoryId;
   var products =[]; 
   let loadedProduct1;
   let loadedProduct;
-  Order.findById(orderId)
-  .populate({
-    path: "items.product_id"
-  }).populate({
-    path: "items.ingredientId"
-  })
+  var loadedCategory;
+  All.findOne({email})
+  .then(all=>{
+    if(!all){
+      const error = new Error("There are no such persons!!");
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedCategory = all.categoryId;
+      return Order.findById(orderId)
+      .populate({
+        path: "items.product_id"
+      }).populate({
+        path: "items.ingredientId"
+      })
+    }
+  }) 
   .then(Order=>{
     if(!Order){
       return res.status(404).json({message:"there are no such orders"})
     }    
     products = Order.items;
-    const results = products.filter(item => item.categoryId === `${categoryId}`);
+    const results = products.filter(item => item.categoryId === `${loadedCategory}`);
     results[0].progress ="Unavailable";
     loadedProduct1 = results[0].product_id;
     Order.save();
@@ -631,6 +673,22 @@ router.put('/cancelbycatid/:categoryId/:orderId',(req,res,next) =>{
     }
     next(err);
   });
+});
+
+router.put('/tokitchen/:orderId/:itemId', (req,res,next) =>{
+  const orderId = req.params.orderId;
+  const itemId = req.params.itemId;
+
+ Order.updateOne(
+    {
+      _id: orderId,
+      items: {$elemMatch: {'_id':itemId}}
+    },
+    { $set: { "items.$.ToKitchen" : true } }
+ )
+ .then(order=>{
+  return res.status(200).json({message:"This item has been sent to kitchen "})  
+ })
 });
 
 router.put('/serve/:orderId',(req,res,next) =>{

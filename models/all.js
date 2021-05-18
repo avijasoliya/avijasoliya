@@ -25,6 +25,10 @@ const allSchema = new Schema({
         required:true,
         
     },
+    active:{
+        type:Boolean,
+        default:true
+    },
     name:{
         type:String,
         required:true
@@ -66,15 +70,18 @@ const allSchema = new Schema({
         type:[String],
         default:['user']
     },
-   orders:[{
-       type:Schema.Types.ObjectId,
-       ref:'Order'
-   }],
-   complaints:[{
-    type:Schema.Types.ObjectId,
-    ref:'Complaint'
-}]
-},{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }});
+    categoryId:{
+        type:Schema.Types.ObjectId,
+        default:null
+    },
+    activatedAt:Date,
+    deactivatedAt:Date,
+    complaints:[{
+        type:Schema.Types.ObjectId,
+        ref:'Complaint'
+    }]
+}
+,{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }});
 
 allSchema.methods.addtocart = function(product){
     let cart = this.cart;
