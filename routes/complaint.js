@@ -47,6 +47,48 @@ router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
 }
 )
 
+router.post('/waiter/complaint/:orderId',auth.auth,(req,res,next)=>{
+  const title = req.body.title;
+  const message = req.body.message;
+    const orderId = req.params.orderId;
+    let loadedAll;
+    let token = req.headers['authorization'];
+    token = token.split(' ')[1];
+    All.findById(id)
+    .then(all=>{
+      // console.log(all);
+      loadedAll  = all;
+      return  Order.findById(orderId)
+    })  
+    .then(order => {
+       if (!orderId) {
+           const error = new Error('An order with this id could not be found');
+           error.statusCode = 401;
+           throw error;
+       } 
+       const complaint = new Complaint({
+           title: title,
+           message: message,
+           orderId:orderId,
+           userId:id
+       })
+       complaint.save();
+       order.complaints.push(complaint);
+       order.save();
+       loadedAll.complaints.push(complaint);
+       loadedAll.save();
+      //  console.log(loadedAll)
+       return res.status(200).json({message:'Thank you for your complaint!..',complaint:complaint});
+   })
+   .catch(err => {
+       if (!err.statusCode) {
+           err.statusCode = 500;
+       }
+       next(err);
+   })
+}
+)
+
 router.post('/reply/:complaintId',auth.auth,(req,res,next)=>{
   const message = req.body.message;
     const orderId = req.params.orderId;

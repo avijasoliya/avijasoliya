@@ -23,6 +23,10 @@ var ItemSchema = new Schema({
     required: true,
     min: [1, 'Quantity can not be less then 1.']
   },
+  note: {
+    type: String,
+    // required: true
+  },
   productPrice: {
     type: Number,
             required: true,
