@@ -51,9 +51,7 @@ var ItemSchema = new Schema({
 });
 const CartSchema = new Schema({
   items: [ItemSchema]
-},{
-        timestamps: true
-    }
+},{timestamps: true}
 );
 
 const OrderSchema = new Schema({
@@ -73,9 +71,9 @@ const OrderSchema = new Schema({
     table:{
       type:String,
     },
-    userId:{
+    allId:{
       type:Schema.Types.ObjectId,
-      ref:'User'
+      ref:'All'
     },
     tableId:{
       type:Schema.Types.ObjectId,
@@ -84,33 +82,33 @@ const OrderSchema = new Schema({
     grandTotal: {
       default: 0,
       type: Number
-  },
-  paymentMethod: {
-    type: String,
-    default: 'cash'
-  },
-  items: [ItemSchema],
-  OrderIs:{
-    type:String,
-    default:'Pending'
-  },
-  OrderReceivedAt:{
-    type:Date
-  },
-  OrderDoneAt:{
-    type:Date
-  },
-  OrderServedAt:{
-    type:Date
-  },
-  complaints:[{
-    type:Schema.Types.ObjectId,
-    ref:'Complaint'
-  }]
+    },
+    paymentMethod: {
+      type: String,
+      default: 'cash'
+    },
+    items: [ItemSchema],
+    OrderIs:{
+      type:String,
+      default:'Pending'
+    },
+    OrderReceivedAt:{
+      type:Date
+    },
+    OrderDoneAt:{
+      type:Date
+    },
+    OrderServedAt:{
+      type:Date
+    },
+    complaints:[{
+      type:Schema.Types.ObjectId,
+      ref:'Complaint'
+    }]
 
-},{
-  timestamps: true
-});
+  },{
+    timestamps: true
+  });
 
 
 OrderSchema.statics = {

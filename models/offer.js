@@ -4,10 +4,10 @@ const Schema = mongoose.Schema;
 const DiscountCodesSchema = new Schema(
 {
     ccode: { type: String, require: true},
-    isPercent: { type: Boolean, require: true, default: true },
-    amount: { type: Number, required: true } ,// if is percent, then number must be ≤ 100, else it’s amount of discount
-    expireDate: { type: String, require: true, default: null },
-    isActive: { type: Boolean, require: true, default: true }
+    Percent: { type: Number,  default: null },
+    amount: { type: Number, default: null } ,// if is percent, then number must be ≤ 100, else it’s amount of discount
+    expireDate: { type: Date, require: true, default: null },
+    isActive: { type: Boolean,  default: true }
 },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_At' }});
 
 
@@ -21,5 +21,3 @@ DiscountCodesSchema.pre('save', function (next) {
 });
 // var Discounts = mongoose.model(DiscountCodes, DiscountCodesSchema);
 module.exports = mongoose.model('DiscountCodes',DiscountCodesSchema);
-
-

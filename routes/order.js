@@ -6,6 +6,7 @@ const cart = require('../models/cart');
 const All = require('../models/all')
 const Table = require('../models/table')
 const auth = require('../middleware/is-auth');
+const { AuthTypeCallsList } = require('twilio/lib/rest/api/v2010/account/sip/domain/authTypes/authCallsMapping');
 
 const router = express.Router();
 
@@ -65,8 +66,9 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
 
 router.put('/waiter/makeorder',(req,res,next) =>{
   const email = req.body.email;
+  const phone = req.body.phone;
   const name = req.body.name;
-  const paymentMethod = req.body.paymentMethod; 
+  const paymentMethod = req.body.paymentMethod;  
   const table = req.body.table; 
   let loadedCart;
   var loadedUser;
@@ -110,14 +112,12 @@ router.put('/waiter/makeorder',(req,res,next) =>{
         items: loadedCart,
         table: table
     })
-    order.save();      
+    order.save();
+    // console.log(loadedUser)
     loadedUser.orders.push(order);
-    loadedUser.save();
+    loadedUser.save();   
     loadedTable.orders.push(order);
     loadedTable.save();
-    
-    // console.log(loadedUser)
-    
     
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})

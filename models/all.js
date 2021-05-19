@@ -39,37 +39,26 @@ const allSchema = new Schema({
         ref : 'OTP'
         
     }],
-    posts:[{
-        type: Schema.Types.ObjectId,
-        ref:'Post'
-        }],
     resetToken:String,
     resetTokenExpiration:Date,
     feedbacks:[{
         type: Schema.Types.ObjectId,
         ref : 'FeedBack'
     }],
-    cart:{
-        items:[{
-            productId:{
-                type:Schema.Types.ObjectId,
-                ref:'Cart'
-            },
-            Qty:{
-                type:Number
-            }
-        }],
-        totalPrice: Number
-    },
+    
     activerole:{
         type:String,
         required:true,
-        default:'user'
+        default:'All'
     },
     roles:{
         type:[String],
-        default:['user']
+        default:['All']
     },
+    orders:[{
+        type:Schema.Types.ObjectId,
+        ref :'Order'
+    }],
     categoryId:{
         type:Schema.Types.ObjectId,
         default:null

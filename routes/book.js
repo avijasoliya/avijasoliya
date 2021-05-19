@@ -357,8 +357,9 @@ router.post('/checkout',function(req,res){
                 var waiting = Math.round(((new Date().getTime() - result[0].requestedtime)/3600000)*60);
                 Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished',waitingtime:waiting + " minutes"}})
                 .then(result =>{
-                    res.status(500).json("checked out");
-
+                    res.status(200).json({
+                        message:"checkout successfully",
+                    });
                 }).catch(err =>{
                     res.status(500).json({error:err});
                 })
@@ -366,8 +367,9 @@ router.post('/checkout',function(req,res){
             else {
                 Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished'}})
                 .then(result =>{
-                    res.status(500).json("checked out");
-
+                    res.status(200).json({
+                        message:"checkout successfully",
+                    });
                 }).catch(err =>{
                     res.status(500).json({error:err});
                 })
@@ -396,7 +398,7 @@ router.post('/checkout',function(req,res){
                         alertUser(table);
                         thanksUser(phone);
                         res.status(200).json({
-                            message:"checkout successfull",
+                            message:"checkout successfully",
                         });
                     }).catch(err =>{
                         res.status(500).json({error:err});

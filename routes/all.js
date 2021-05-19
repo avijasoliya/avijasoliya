@@ -30,11 +30,13 @@ router.put('/register',(req, res, next) => {
         error.data = errors.array();
         throw error;
     }
+    const restaurantId = req.params.restaurantId;
     const email = req.body.email;
     const phone = req.body.phone;
     const name = req.body.name;
     const password = req.body.password;
     const activerole = req.body.activerole;
+    const categoryId = req.body.categoryId;
     const roles = req.body.roles;
     const sha1 = crypto.createHash('sha1').update(password).digest('hex');
     const all = new All({
@@ -42,15 +44,16 @@ router.put('/register',(req, res, next) => {
         email: email,
         phone: phone,
         activerole: activerole,
+        categoryId:categoryId,
+        restaurantId:restaurantId,
         password: sha1        
     })
-    console.log(all);
     return all.save()
-        .then(all => {
-            res.status(201).json({ message: 'Registered sucessfully', Id: all._id });
-        })
-        .catch(err => {
-            if (!err.statusCode) {
+    .then(all=>{
+        return res.status(201).json({ message: 'Registered sucessfully', Id: all._id });
+    })
+    .catch(err => {
+        if (!err.statusCode) {
                 err.statusCode = 500;
                 return res.status(500).json({message:"mmm...somthing seems wrong here!!  you sure,you added the right credentials?"})
             }
@@ -88,8 +91,8 @@ router.post('/login',(req, res, next) => {
                 loadedAll = all;
                 loadedActiverole = all.activerole;
                 var sha1 = crypto.createHash('sha1').update(password).digest('hex');
-                let accessToken = jwt.sign({ email: loadedAll.email,name:loadedAll.name, phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretaccesstoken', { expiresIn: "86400s" });
-                let refreshToken = jwt.sign({ email: loadedAll.email,name:loadedAll.name, phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretrefreshtoken', { expiresIn: "7d" })            
+                let accessToken = jwt.sign({ email: loadedAll.email,name:loadedAll.name, categoryId : loadedAll.categoryId, phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretaccesstoken', { expiresIn: "86400s" });
+                let refreshToken = jwt.sign({ email: loadedAll.email,name:loadedAll.name,categoryId : loadedAll.categoryId, phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretrefreshtoken', { expiresIn: "7d" })            
                 
                 if (sha1 == all.password) {
                     accessTokens.push(accessToken);
@@ -101,7 +104,7 @@ router.post('/login',(req, res, next) => {
                 loadedAll = all;
                 loadedActiverole = all.activerole;
                 var sha1 = crypto.createHash('sha1').update(password).digest('hex');
-                let accessToken = jwt.sign({ email: loadedAll.email, name:loadedAll.name,phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretaccesstoken', { expiresIn: "86400s" });
+                let accessToken = jwt.sign({ email: loadedAll.email,name:loadedAll.name, phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretaccesstoken', { expiresIn: "86400s" });
                 let refreshToken = jwt.sign({ email: loadedAll.email,name:loadedAll.name, phone: loadedAll.phone, Id: loadedAll._id.toString() }, 'somesupersecretrefreshtoken', { expiresIn: "7d" })            
                 
                 if (sha1 == all.password) {
@@ -146,7 +149,7 @@ router.post('/login',(req, res, next) => {
         })
         .catch(err => {
             if (!err.statusCode) {
-                err.statusCode = 500;
+                err.statusCode = 500;e
             }
             next(err);
         });
@@ -399,40 +402,87 @@ router.delete('/delete/:allId',  (req, res, next) => {
   });
   
 
-router.put('/update/all/:allId',(req, res, next) => {
+router.put('/update/:allId',(req,res,next) =>{
     const allId = req.params.allId;
-    const email = req.body.email;
     const phone = req.body.phone;
     const name = req.body.name;
-    
-    if (!email) {
-      const error = new Error('No email found.');
-      error.statusCode = 422;
-      throw error;
-    }
+    const categoryId = req.body.categoryId;
+
     All.findById(allId)
-      .then(all => {
-        if (!all) {
-          const error = new Error('Could not find user.');
-          error.statusCode = 404;
-          throw error;
+    .then(all=>{
+        if(!all)
+        {
+            const error = new Error('There are no such persons!!');
+            error.statusCode = 404;
+            throw error;
         }
-        all.email = email;
-        all.phone = phone;
-        all.name = name;
-        return all.save();
-        })
-      .then(result => {
-        return res.status(200).json({ message: 'user updated!', user: result});
-      })
-      .catch(err => {
+        else{
+            all.phone = phone;
+            all.categoryid = categoryId;
+            // all.name = name;
+            all.save();
+            return res.json({message:"Data of this person has been updated !", person:all})
+        }
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+          return err;
+        }
+        next(err);
+      });
+    
+});
+
+router.put('/deactivate/:allId', (req,res,next) =>{
+    const allId = req.params.allId;
+    All.findById(allId)
+    .then(all=>{
+        if(!all)
+        {
+            const error = new Error('There are no such persons!!');
+            error.statusCode = 404;
+            throw error;
+        }
+        else{
+            all.active = false;
+            all.deactivatedAt = Date.now();
+            all.save();
+            return res.json({message:"This person has been deactivated !", person:all})
+        }
+    })
+    .catch(err => {
         if (!err.statusCode) {
           err.statusCode = 500;
         }
         next(err);
       });
-  });
+})
 
+router.put('/activate/:allId', (req,res,next) =>{
+    const allId = req.params.allId;
+    All.findById(allId)
+    .then(all=>{
+        if(!all)
+        {
+            const error = new Error('There are no such persons!!');
+            error.statusCode = 404;
+            throw error;
+        }
+        else{
+            all.active = true;
+            all.activatedAt = Date.now();
+            all.save();
+            return res.json({message:"This person has been activated !", person:all})
+        }
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+})
 module.exports = router;
 
 
