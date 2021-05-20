@@ -3,11 +3,11 @@ const Schema = mongoose.Schema;
 
 var ItemSchema = new Schema({
   productId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
             ref: 'Product',
   },
   product_id: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
             ref: 'Product',
   },
   ingredientId:{

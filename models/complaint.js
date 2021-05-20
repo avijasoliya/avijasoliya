@@ -17,7 +17,15 @@ const complaintSchema = new Schema(
         userId:{
             type:Schema.Types.ObjectId,
             ref:'All'
-        }
+        },
+        replyId:[{
+            type:Schema.Types.ObjectId,
+            ref:'Reply'
+        }],
+        // replies:[{
+        //     type:Schema.Types.ObjectId,
+        //     ref:'Reply'
+        // }]
     },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }}
 )
 

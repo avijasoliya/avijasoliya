@@ -287,7 +287,9 @@ router.post('/getorders/table',(req, res, next) => {
   const CurrentPage = req.query.page || 1;
   const perPage = 20;
   let totalItems;
-  Order.findOne({table})
+  Order.findOne({table}).populate({path:"orders",populate:{
+    path:"items.product_id"
+  }})
     .then(orders => {
       res.status(200)
         .json({
@@ -333,8 +335,7 @@ router.get('/myorders',auth.auth,(req,res,next) =>{
     }
     next(err);
   });
-}
-);
+});
 
 router.put('/receive/:orderId', (req,res,next) =>{
   const orderId = req.params.orderId;

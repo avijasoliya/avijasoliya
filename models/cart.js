@@ -14,6 +14,10 @@ var ItemSchema = new Schema({
     type:String,
     ref:'Ingredient'
   },
+  categoryId:{
+    type:String,
+    ref:'Category'
+  },
   priority:{
     type:Number,
     required:true
@@ -23,16 +27,16 @@ var ItemSchema = new Schema({
     required: true,
     min: [1, 'Quantity can not be less then 1.']
   },
-  note: {
-    type: String,
-    // required: true
-  },
   productPrice: {
     type: Number,
             required: true,
         },
   ingredientPrice:{
     type:Number
+  },
+  notes:{
+    type:String,
+    default: null
   },
   total: {
       type: Number,

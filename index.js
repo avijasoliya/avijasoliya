@@ -23,6 +23,7 @@ const complaintRoutes = require('./routes/complaint');
 const restoRoutes = require('./routes/restaurant');
 const ingredientsRoutes = require('./routes/ingredients');
 const offerRoutes = require('./routes/offer');
+const replyRoutes = require('./routes/reply');
 
 const app = express();
 // const app1 = express();
@@ -93,6 +94,7 @@ app.use('/restaurant',restoRoutes)
 app.use('/home',homeRoutes)
 app.use('/ingredients',ingredientsRoutes)
 app.use('/offer',offerRoutes)
+app.use('/reply',replyRoutes)
 
 
 app.use(session({
