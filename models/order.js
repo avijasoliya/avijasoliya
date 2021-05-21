@@ -3,11 +3,11 @@ const Schema = mongoose.Schema;
 
 var ItemSchema = new Schema({
   productId: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
   product_id: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
   ingredientId:{
@@ -49,9 +49,11 @@ var ItemSchema = new Schema({
           required: true,
         }
 });
-const CartSchema = new Schema({
+const CartSchema = new Schema({  
   items: [ItemSchema]
-},{timestamps: true}
+},{
+        timestamps: true
+    }
 );
 
 const OrderSchema = new Schema({
@@ -60,6 +62,7 @@ const OrderSchema = new Schema({
       type: String,
       required: true
     },
+    table:{type: String},
     email: {
       type: String,
     //   required: true,
@@ -82,33 +85,33 @@ const OrderSchema = new Schema({
     grandTotal: {
       default: 0,
       type: Number
-    },
-    paymentMethod: {
-      type: String,
-      default: 'cash'
-    },
-    items: [ItemSchema],
-    OrderIs:{
-      type:String,
-      default:'Pending'
-    },
-    OrderReceivedAt:{
-      type:Date
-    },
-    OrderDoneAt:{
-      type:Date
-    },
-    OrderServedAt:{
-      type:Date
-    },
-    complaints:[{
-      type:Schema.Types.ObjectId,
-      ref:'Complaint'
-    }]
+  },
+  paymentMethod: {
+    type: String,
+    default: 'cash'
+  },
+  items: [ItemSchema],
+  OrderIs:{
+    type:String,
+    default:'Pending'
+  },
+  OrderReceivedAt:{
+    type:Date
+  },
+  OrderDoneAt:{
+    type:Date
+  },
+  OrderServedAt:{
+    type:Date
+  },
+  complaints:[{
+    type:Schema.Types.ObjectId,
+    ref:'Complaint'
+  }]
 
-  },{
-    timestamps: true
-  });
+},{
+  timestamps: true
+});
 
 
 OrderSchema.statics = {

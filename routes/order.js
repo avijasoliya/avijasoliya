@@ -68,8 +68,8 @@ router.put('/waiter/makeorder',(req,res,next) =>{
   const email = req.body.email;
   const phone = req.body.phone;
   const name = req.body.name;
+  const table = req.body.table;
   const paymentMethod = req.body.paymentMethod;  
-  const table = req.body.table; 
   let loadedCart;
   var loadedUser;
   Table.findOne({table})
@@ -113,9 +113,8 @@ router.put('/waiter/makeorder',(req,res,next) =>{
         table: table
     })
     order.save();
-    // console.log(loadedUser)
     loadedUser.orders.push(order);
-    loadedUser.save();   
+    loadedUser.save();    
     loadedTable.orders.push(order);
     loadedTable.save();
     
@@ -282,28 +281,24 @@ router.get('/getorders',(req, res, next) => {
     });  
 });
 
-router.post('/getorders/table',(req, res, next) => {
+router.post('/getorders/table',(req,res,next) =>{
   const table = req.body.table;
-  const CurrentPage = req.query.page || 1;
-  const perPage = 20;
-  let totalItems;
-  Order.findOne({table}).populate({path:"orders",populate:{
-    path:"items.product_id"
-  }})
-    .then(orders => {
-      res.status(200)
-        .json({
-          message: 'Fetched orders Successfully',
-          orders: orders,
-          totalItems: totalItems
-        });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });  
+  Order.find({table}).populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
+  .then(orders=>{
+    return res.status(200).json({message:'Here is the list you asked for', list:orders})
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
 });
 
 router.get('/myorders',auth.auth,(req,res,next) =>{
