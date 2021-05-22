@@ -499,7 +499,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   const email = req.body.email;
-  var productId = req.params.productId;
+  var product_id = req.params.product_id;
   var ingredientId = req.params.ingredientId;
   const priority = req.body.priority;
   const qty = Number.parseInt(req.body.qty);
@@ -508,7 +508,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
   console.log(req.params)
 
   if (ingredientId == undefined){
-    Product.findById(productId)
+    Product.findById(product_id)
     .then(product => {
       if (!product) {
         return res.status(404).json({ message: "Could not find post" });
@@ -518,7 +518,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
     })
 
     All.findOne({email}).populate({
-      path: "items.productId",
+      path: "items.product_id",
       select: "name price description imageUrl "
     })
     .then(all=>{
@@ -532,7 +532,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
         throw new Error('Invalid request');
       } else if (cart) {
         const indexFound = cart.items.findIndex(item => {
-          return item.productId === productId;
+          return item.product_id === product_id;
         });
         if (indexFound !== -1 && qty <= 0) {
           cart.items.splice(indexFound, 1);
@@ -548,7 +548,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
           cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
         } else if (qty > 0) {
           cart.items.push({
-            productId :productId,
+            product_id :product_id,
             qty: qty,
             priority:priority,
             productPrice: productDetails,
@@ -560,7 +560,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
         }
         return cart.save((err,cart)=>{
           Cart.findOne(cart).populate({
-        path: "items.productId",
+        path: "items.product_id",
         select: "name price description imageUrl "
       }).exec((err,cart)=> {
         return res.json({
@@ -575,7 +575,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
           email: email,          
           items: [
             {
-              productId : productId,
+              product_id : product_id,
               qty: qty,
               priority: priority,
               productPrice: productDetails,
@@ -586,7 +586,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
         cart = new Cart(cartData);
         return cart.save((err,cart)=>{
           Cart.findOne(cart).populate({
-        path: "items.productId",
+        path: "items.product_id",
         select: "name price description imageUrl "
       }).exec((err,cart)=> {
         res.json({
@@ -606,7 +606,7 @@ router.post('/parcel/addtocart/:product_id/:ingredientId?',auth.auth,(req, res, 
     })
 }
 else {
-  Product.findById(productId)
+  Product.findById(product_id)
     .then(product => {
       if (!product) {
         return res.status(404).json({ message: "Could not find post" });
@@ -625,7 +625,7 @@ else {
 
 
 All.findOne({email}).populate({
-  path: "items.productId",
+  path: "items.product_id",
   select: "name price description imageUrl "
 })
     .then(all=>{
@@ -633,7 +633,7 @@ All.findOne({email}).populate({
         return res.status(403).json({message:'Register yourself first,will ya?!'})
       }
       return Cart.findOne({ email }).populate({
-        path: "items.productId",
+        path: "items.product_id",
         select: "name price description imageUrl "
       })    
     })
@@ -642,7 +642,7 @@ All.findOne({email}).populate({
         throw new Error('Invalid request');
       } else if (cart) {
         const indexFound = cart.items.findIndex(item => {
-          return item.productId === productId;
+          return item.product_id === product_id;
         });
         if (indexFound !== -1 && qty <= 0) {
           cart.items.splice(indexFound, 1);
@@ -659,7 +659,7 @@ All.findOne({email}).populate({
           cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
         } else if (qty > 0) {
           cart.items.push({
-            productId :productId,
+            product_id :product_id,
             ingredientId : ingredientId,
             qty: qty,
             priority:priority,
@@ -673,7 +673,7 @@ All.findOne({email}).populate({
         }
         return cart.save((err,cart)=>{
           Cart.findOne(cart).populate({
-        path: "items.productId",
+        path: "items.product_id",
         select: "name price description imageUrl "
       }).exec((err,cart)=> {
         return res.json({
@@ -688,7 +688,7 @@ All.findOne({email}).populate({
           email: email,          
           items: [
             {
-              productId : productId,
+              product_id : product_id,
               ingredientId : ingredientId,
               qty: qty,
               priority: priority,
@@ -701,7 +701,7 @@ All.findOne({email}).populate({
         cart = new Cart(cartData);
         return cart.save((err,cart)=>{
           Cart.findOne(cart).populate({
-        path: "items.productId",
+        path: "items.product_id",
         select: "name price description imageUrl "
       }).exec((err,cart)=> {
         res.json({
@@ -728,7 +728,7 @@ router.get('/getcart',auth.auth,exports.get = (req, res, next) => {
     return res.status(200).json({message:'Enter a valid email first'})
   }
   Cart.findOne({email:email}).populate({
-    path: "items.productId"
+    path: "items.product_id"
   }).populate({
     path: "items.ingredientId"
   })
@@ -746,15 +746,15 @@ router.get('/getcart',auth.auth,exports.get = (req, res, next) => {
     });
 });
 
-router.put('/subtract/:productId',auth.auth,function (req, res, next) {
+router.put('/subtract/:product_id',auth.auth,function (req, res, next) {
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
-  const productId = req.params.productId;
+  const product_id = req.params.product_id;
   const qty = Number.parseInt(req.body.qty);
   let productDetails;
   let loadedPrice;
   console.log('qty: ', qty);
-  Product.findById(req.params.productId)
+  Product.findById(req.params.product_id)
     .then(product => {
       if (!product) {
         res.status(404).json({ message: "Could not find product" });
@@ -769,7 +769,7 @@ router.put('/subtract/:productId',auth.auth,function (req, res, next) {
         throw new Error('Invalid request');
       } else {
         const indexFound = cart.items.findIndex(item => {
-          return item.productId === productId;
+          return item.product_id === product_id;
         });
         if (indexFound !== -1 && cart.items[0].ingredientPrice == undefined ) {
          

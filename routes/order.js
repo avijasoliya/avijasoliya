@@ -522,7 +522,7 @@ router.get('/bycatid/:orderId',(req,res,next) =>{
   });
 });
 
-router.put('/acceptbycatid/:orderId',(req,res,next) =>{
+router.put('/acceptbycatid/:orderId',auth.auth,(req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   const orderId = req.params.orderId;
@@ -552,8 +552,8 @@ router.put('/acceptbycatid/:orderId',(req,res,next) =>{
     }    
     products = Order.items;
     const results = products.filter(item => item.categoryId === `${loadedCategory}`);
-    results[0].progress ="In Progress";
-    results[0].itemAcceptedAt = Date.now();
+    results.progress ="In Progress";
+    results.itemAcceptedAt = Date.now();
     Order.save();
     return res.status(200).json({message:"the item you accepted to make is :" , item: results})
   }) 

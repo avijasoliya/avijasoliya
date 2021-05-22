@@ -43,7 +43,7 @@ router.post('/reply/:complaintId',(req,res,next)=>{
   router.get('/replies/:replyId',(req, res, next) => {
     const complaintId = req.params.complaintId;
     const replyId = req.params.replyId;
-
+    let totalItems
     Reply.findById(replyId).populate({path:"replies"}).populate({path:"complaintId"})
       .then(reply => {
         if (!reply) {
@@ -51,7 +51,7 @@ router.post('/reply/:complaintId',(req,res,next)=>{
           error.statusCode = 404;
           throw error;
         }
-        res.status(200).json({ message: 'reply fetched.', reply: reply });
+        res.status(200).json({ message: 'reply fetched.', reply: reply,totalItems:totalItems });
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -64,7 +64,7 @@ router.post('/reply/:complaintId',(req,res,next)=>{
   router.get('/reply/:complaintId',(req, res, next) => {
     const complaintId = req.params.complaintId;
     const replyId = req.params.replyId;
-
+    let totalItems
     Complaint.findById(complaintId).populate({path:"complaint"}).populate({path:"replyId"})
       .then(complaint => {
         if (!complaint) {
@@ -72,7 +72,7 @@ router.post('/reply/:complaintId',(req,res,next)=>{
           error.statusCode = 404;
           throw error;
         }
-        res.status(200).json({ message: 'complaint fetched.', complaint: complaint });
+        res.status(200).json({ message: 'complaint fetched.', complaint: complaint,totalItems:totalItems });
       })
       .catch(err => {
         if (!err.statusCode) {
