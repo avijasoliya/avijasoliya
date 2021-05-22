@@ -4,6 +4,7 @@ const DiscountCodes = require('../models/offer')
 const Order = require('../models/order')
 const cc = require('coupon-code')
 const code = cc.generate();
+const Product = require('../models/menu')
 
 router.post('/generate',(req,res,next) =>{
     const ccode = code;
@@ -183,5 +184,38 @@ router.put('/update/:couponId', (req,res,next) =>{
     });
 });
 
+router.post('/offer',(req,res,next) =>{
+  const offer = req.body.offer;
+ 
+  var loadedProducts =[];
+      
+  Product.find()
+  .then(products =>{
+    if(!products)
+    {
+      const error = new Error('There are no such products!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedProducts = products;
+      // console.log(loadedProducts)
+      loadedProducts.forEach(product =>{
+        product.offer = offer;
+        const offers = (product.originalPrice* offer)/100 ;
+        const LoadedPrices = product.originalPrice - offers;
+        product.offerPrice = LoadedPrices;
+        product.save();
+      })
+    }
+            return res.json({message:"Offer has been applied to the entire Restaurant" , products:products})
+  }) 
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }); 
 
+});
 module.exports = router;

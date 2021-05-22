@@ -182,5 +182,18 @@ router.get('/complaint/:complaintId',(req, res, next) => {
 });
 
 
+router.get('/complaints/:userId',(req, res, next) => {
+  const userId = req.params.userId;
+  Complaint.findById(userId)
+    .then(complaints => {
+      res.status(200).json({ message: 'complaint fetched.', complaints: complaints });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
 
 module.exports = router;
