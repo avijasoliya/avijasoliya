@@ -14,7 +14,7 @@ router.post('/reservation',auth.auth,function(req,res){
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
     console.log(name);
-    Reservation.findOne({phone:req.body.phone}).then(result=>{
+    Reservation.findOne({phone}).then(result=>{
         if (!result){
                 const reservation = new Reservation({
                 phone:phone,
@@ -436,7 +436,7 @@ router.post('/checkout',function(req,res){
                             message:"checkout successfull",
                         });
                     }).catch(err =>{
-                        res.status(500).json({error:err});
+                        res.status(500).json(err);
                     })
                 }
                 })

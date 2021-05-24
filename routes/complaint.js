@@ -135,14 +135,12 @@ router.get('/complaints', (req, res, next) => {
   // const CurrentPage = req.query.page || 1;
   // const perPage = 10;
   let totalItems;
-  // Complaint.find()
-    // .countDocuments()
-    // .then(count => {
-      // totalItems = count;
-      // return Complaint.find().populate({path:"orderId"}).populate({path:"userId"})
-        // .skip((CurrentPage - 1) * perPage)
-        // .limit(perPage)
-    // })
+  Complaint.find()
+    .countDocuments()
+    .then(count => {
+      totalItems = count;
+      
+    })
     Complaint.find().populate({path:"orderId"}).populate({path:"userId"})
     .then(complaints => {
       res.status(200)

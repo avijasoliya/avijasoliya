@@ -11,11 +11,11 @@ router.get('/menues',(req, res, next) => {
   const CurrentPage = req.query.page || 1;
   const perPage = 100;
   let totalItems;
-  Product.find()
+  Product.find().populate('ingredients').populate('categoryId')
     .countDocuments()
     .then(count => {
       totalItems = count;
-      return Product.find()
+      return Product.find().populate('ingredients').populate('categoryId')
         .skip((CurrentPage - 1) * perPage)
         .limit(perPage)
     })
