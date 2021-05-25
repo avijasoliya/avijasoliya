@@ -253,8 +253,18 @@ router.post('/forgot',auth.auth,(req, res, next) => {
 
 router.post('/get',(req,res,next) =>{
     const activerole = req.body.activerole;
+    const CurrentPage = req.query.page || 1;
+    const perPage = 100;
+    let totalPersons;
     All.find({activerole:activerole})
-        .then(all=>{
+      .countDocuments()
+      .then(count => {
+        totalPersons = count;
+        return All.find({activerole:activerole})
+          .skip((CurrentPage - 1) * perPage)
+          .limit(perPage)
+      })        
+      .then(all=>{
             if(!all){
                 return res.status(404).json({message:"There are no person with such roles"});
             }
@@ -262,7 +272,8 @@ router.post('/get',(req,res,next) =>{
                 return res.status(404).json({message:"There are no person with such roles"});
             }
             else{
-                return res.status(200).json({message:"Here is the list you asked for..", list:all});
+                return res.status(200).json({message:"Here is the list you asked for..", list:all,totalPersons: totalPersons
+            });
             }           
         })
         .catch(err => {

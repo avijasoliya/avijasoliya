@@ -115,7 +115,7 @@ router.put('/waiter/makeorder',(req,res,next) =>{
     order.save();
     loadedUser.orders.push(order);
     loadedUser.save();    
-    loadedTable.orders.push(order);
+    loadedTable.orderId.push(order);
     loadedTable.save();
     
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
@@ -185,6 +185,7 @@ router.put('/parcel/makeorder',auth.auth,(req,res,next) =>{
     next(err);
   });
 })
+
 router.post('/current',auth.auth, (req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
@@ -281,17 +282,14 @@ router.get('/getorders',(req, res, next) => {
     });  
 });
 
-router.post('/getorders/table',(req,res,next) =>{
-  const table = req.body.table;
-  Order.find({table}).populate({
-    path: "items.product_id"
-  }).populate({
-    path: "items.ingredientId"
-  }).populate({
-    path: "items.categoryId"
-  })
-  .then(orders=>{
-    return res.status(200).json({message:'Here is the list you asked for', list:orders})
+router.post('/getorders/:tableId',(req,res,next) =>{
+  const tableId = req.params.tableId;
+  Table.findById(tableId).populate({path:"tables",populate:{
+    path: "orderId"
+  }
+})  
+  .then(tables=>{ 
+    return res.status(200).json({message:'Here is the list you asked for',list:tables})
   })
   .catch(err => {
     if (!err.statusCode) {

@@ -393,6 +393,18 @@ router.post('/checkout',function(req,res){
                 console.log(available);
                 if (result[0].waiting > 0 && Status == 'Checked In' || (result[0].Status != 'Reserved' && Status !='Checked In' && fphone==phone && result[0].waiting !=1)){
                     console.log("check in is " + 'First Checked In')
+                    Order.findOne({table})
+                    .then(result=>{
+                        if(!table)
+                        {
+                            res.status(200).json({
+                                message:"table not found",
+                            });
+                        }
+                        else{
+                            return Order.updateOne({paymentstatus:'Done'})
+                        }
+                    })
                     Table.updateOne({table:table},{$set:{Status:'Checkin',availableTime:available,waiting:result[0].waiting}})
                     .then(result =>{
                         alertUser(table);
@@ -406,6 +418,18 @@ router.post('/checkout',function(req,res){
                 } 
                 else if(result[0].waiting == 1 && Status != 'Checked In'){
                     console.log("check in is " + 'last Checked In')
+                    Order.findOne({table})
+                    .then(result=>{
+                        if(!table)
+                        {
+                            res.status(200).json({
+                                message:"table not found",
+                            });
+                        }
+                        else{
+                            return Order.updateOne({paymentstatus:'Done'})
+                        }
+                    })
                     Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Available',availableTime:null}})
                     .then(result =>{
                         thanksUser(phone);
@@ -418,6 +442,18 @@ router.post('/checkout',function(req,res){
                 }
                 else if(result[0].waiting > 0 && Status != 'Checked In'){
                     console.log("check in is " + 'Checked In')
+                    Order.findOne({table})
+                    .then(result=>{
+                        if(!table)
+                        {
+                            res.status(200).json({
+                                message:"table not found",
+                            });
+                        }
+                        else{
+                            return Order.updateOne({paymentstatus:'Done'})
+                        }
+                    })
                     Table.updateOne({table:table},{$set:{waiting:result[0].waiting,availableTime:available}})
                     .then(result =>{
                         thanksUser(phone);
@@ -429,6 +465,18 @@ router.post('/checkout',function(req,res){
                     })
                 }
                 else {
+                    Order.findOne({table})
+                    .then(result=>{
+                        if(!table)
+                        {
+                            res.status(200).json({
+                                message:"table not found",
+                            });
+                        }
+                        else{
+                            return Order.updateOne({paymentstatus:'Done'})
+                        }
+                    })
                     Table.updateOne({table:table},{$set:{Status:'Available',availableTime:null}})
                     .then(result =>{
                         thanksUser(phone);

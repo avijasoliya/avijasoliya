@@ -97,13 +97,13 @@ router.get('/feedbacks',(req, res, next) => {
       $group: {
         _id: "$userId",
         avgrating: {
-          $avg: "$rating"
+          $avg: "$rating",
         }
       }
     }
   ])
     .then(results => {
-        res.send({ rating: results[0].avgrating });
+        res.send({ rating: results.avgrating,});
     })
     .catch(error => console.error(error))
 });
