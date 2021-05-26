@@ -13,6 +13,7 @@ router.post('/addresto',(req,res,next) =>{
         RestaurantName:RestaurantName
     })
         loadedRestaurant = resto;
+
         console.log('The process of making an restaurant available has been started....')
         var job = new CronJob('* * * * * 1', function() {
         loadedRestaurant.activity = false;
@@ -24,6 +25,31 @@ router.post('/addresto',(req,res,next) =>{
 
     return res.status(200).json({message:"Restaurant created!" , RestaurantId : resto._id,message:"restaurant is available for the moment can you choose another one", restaurnat:resto})
 });
+
+
+
+router.get('/validity/:restaurantId',(req,res,next) =>{
+    const restaurantId = req.params.restaurantId
+    Restaurant.aggregate([
+        { $project: {
+          difference: {
+            $divide: [
+              {           
+              $subtract: ["$expireAt", "$created_At"] },
+              60 * 60 * 24 * 1000
+            ]
+          }
+        }},
+        { $group: {
+          _id: "$restaurantId",
+          totalDifference: { $sum: "$difference" }
+        }},
+      ])
+      .then(results => {
+        res.send({ daysleft: results[0].totalDifference,});
+    })
+    .catch(error => console.error(error))
+})
 
 
 router.put('/pending/:restaurantId',(req,res,next) =>{

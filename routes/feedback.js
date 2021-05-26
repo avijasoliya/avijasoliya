@@ -100,7 +100,7 @@ router.get('/feedbacks',(req, res, next) => {
           $avg: "$rating",
         }
       }
-    }
+    } 
   ])
     .then(results => {
         res.send({ rating: results.avgrating,});
