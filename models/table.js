@@ -10,7 +10,13 @@ const tableSchema = new Schema({
     QRCode:{type:String},
     waiting: {type:Number,default:0},
     restaurantId:{type:Schema.Types.ObjectId},
-    orders:[{type:Schema.Types.ObjectId}]
+    currentUser:{type:Schema.Types.ObjectId, ref:'All'},
+    orders:[{
+        type:Schema.Types.ObjectId,
+        ref:'Order'
+    }],
+    userEmail:String,
+    phone:String
 
 });
 

@@ -166,11 +166,12 @@ router.put('/parcel/makeorder',auth.auth,(req,res,next) =>{
         email:email,
         grandTotal: subTotal,
         userId:id,
-        items: loadedCart
+        items: loadedCart,
+        orderType:'Parcel'
     })
     order.save();
     loadedUser.orders.push(order);
-    loadedUser.save();    
+    loadedUser.save();  
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })
@@ -283,60 +284,60 @@ router.get('/getorders',(req, res, next) => {
 });
 
 router.get('/orderlist/:tableId?', (req,res,next) =>{
-    const table = req.body.table;
-    const tableId = req.params.tableId;
-    if(table == undefined){
-    Table.findById(tableId).populate({path:"orders",populate:{
-        path: "items.product_id"
-      }
-    })
-    .populate({path:"orders",populate:{
-      path: "items.categoryId"
+  const table = req.body.table;
+  const tableId = req.params.tableId;
+  if(table == undefined){
+  Table.findById(tableId).populate({path:"orders",populate:{
+      path: "items.product_id"
     }
-    })
-    .populate({path:"orders",populate:{
-      path: "items.ingredientId"
+  })
+  .populate({path:"orders",populate:{
+    path: "items.categoryId"
+  }
+  })
+  .populate({path:"orders",populate:{
+    path: "items.ingredientId"
+  }
+  })
+  .populate("currentUser")
+  .then(table=>{
+     
+    return res.status(200).json({message:'Here is the list you asked for', list:table})
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
     }
-    })
-    .populate("currentUser")
-    .then(table=>{
-        console.log(table)
-      return res.status(200).json({message:'Here is the list you asked for', list:table})
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+    next(err);
+  });
 }
 else{
-    Table.findOne({table}).populate({path:"orders",populate:{
-        path: "items.product_id"
-      }
-    })
-    .populate({path:"orders",populate:{
-      path: "items.categoryId"
+  Table.findOne({table}).populate({path:"orders",populate:{
+      path: "items.product_id"
     }
-    })
-    .populate({path:"orders",populate:{
-      path: "items.ingredientId"
+  })
+  .populate({path:"orders",populate:{
+    path: "items.categoryId"
+  }
+  })
+  .populate({path:"orders",populate:{
+    path: "items.ingredientId"
+  }
+  })
+  .populate("currentUser")
+  .then(table=>{
+     
+    return res.status(200).json({message:'Here is the list you asked for', list:table})
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
     }
-    })
-    .populate("currentUser")
-    .then(table=>{
-        console.log(table)
-      return res.status(200).json({message:'Here is the list you asked for', list:table})
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+    next(err);
+  });
 
 }
-  });
+});
 
 router.get('/myorders',auth.auth,(req,res,next) =>{
   let token = req.headers['authorization'];

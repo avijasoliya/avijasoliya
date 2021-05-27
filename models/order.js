@@ -99,6 +99,10 @@ const OrderSchema = new Schema({
     type:String,
     default:'Pending'
   },
+  orderType:{
+    type:String,
+    default:'OnTable'
+  },
   OrderReceivedAt:{
     type:Date
   },

@@ -44,8 +44,7 @@ router.post('/reservation',auth.auth,function(req,res){
             res.status(500).json({error:'Reservation with this Number already exists!!!! Please use a different number'});
         }
     })
-});
-
+ });
 
 router.set("view engine","ejs");
 
@@ -72,16 +71,14 @@ router.post('/table',function(req,res){
                 const table = req.body.table;
                 qrpng.pipe(require('fs').createWriteStream('./images/'+`${table}`+ '.png'));
                 
-                const png_string = QRCode.imageSync(tablec, { type: 'png' });
-                
+                const png_string = QRCode.imageSync(tablec, { type: 'png' });               
+                tabledetails.QRCode = `http://localhost:8080/images/`+`${table}`+`.png`
+                tabledetails.save();
                 res.status(201).json({
                     message:"created successfully",
                     createdTable:tabledetails,
-                    QRCode:'http://localhost:8020/images/'+`${table}`+ '.png'
-                }); 
-                tabledetails.QRCode = `http://localhost:8020/images/`+`${table}`+`.png`
-                tabledetails.save();
-                res.render("qr");
+                    QRCode:'http://localhost:8080/images/'+`${table}`+ '.png'});
+                // res.render("qr");                
             }).catch(err => {
                 res.status(500).json({error:err});
             })
@@ -89,27 +86,25 @@ router.post('/table',function(req,res){
     })
 });
 
-
-
 router.get('/tables',(req, res, next) => {
-   let totalItems;
-    Table.find()      
-      .then(tables => {
-        res.status(200)
-          .json({
-            message: 'tables fetched Successfully',
-            tables: tables,
-            totalItems: totalItems
-          });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  });
-
+    let totalItems;
+     Table.find()      
+       .then(tables => {
+         res.status(200)
+           .json({
+             message: 'tables fetched Successfully',
+             tables: tables,
+             totalItems: totalItems
+           });
+       })
+       .catch(err => {
+         if (!err.statusCode) {
+           err.statusCode = 500;
+         }
+         next(err);
+       });
+   
+   });
 
 router.delete('/delete/:tableId', (req, res, next) => {
     // const restaurantId = req.params.restaurantId;
@@ -136,7 +131,6 @@ router.delete('/delete/:tableId', (req, res, next) => {
       });
   });     
 
-
 router.get('/reservations',function(req,res){
     // const restaurantId = req.params.restaurantId;
 
@@ -150,7 +144,6 @@ router.get('/reservations',function(req,res){
     }).catch(err =>{
     })
 })
-
 
 router.delete('/deleter/:reservationId', (req, res, next) => {
     // const restaurantId = req.params.restaurantId;
@@ -176,7 +169,6 @@ router.delete('/deleter/:reservationId', (req, res, next) => {
         next(err);
       });
   });     
-
 
 router.put('/update/:tableId',(req, res, next) => {
 const tableId = req.params.tableId;
@@ -210,9 +202,7 @@ Table.findById(tableId)
     });
 });
 
-// router.get('/scan',(req,res,next)=>{
-    
-    
+// router.get('/scan',(req,res,next)=>{    
 //     var buffer = fs.readFileSync(__dirname + '11.png');
 //     Jimp.read(buffer, function(err, image) {
 //         if (err) {
@@ -230,7 +220,7 @@ Table.findById(tableId)
 // })
 
 
-router.post('/checkin',auth.auth,function(req,res){
+router.post('/checkin',auth.auth,function(req,res,next){
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
     var buffer = fs.readFileSync('./images' + '/2.png');
@@ -252,7 +242,19 @@ router.post('/checkin',auth.auth,function(req,res){
     var table = req.body.table;
     // const table = req.params.table;
     var requestedtime;
-    Reservation.find({phone:phone,Status:'Finished'}).count().then(result =>{
+    Table.findOne({userEmail:email})
+    .then(table=>{
+        if(table){
+          const error = new Error ("This person is already sitting on one of the tables")
+            error.statusCode = 401;
+            throw error;
+        }
+        else{
+            return Reservation.find({phone:phone,Status:'Finished'}).count()
+        }
+    })
+    
+   .then(result =>{
         console.log(" result is " + result);
         console.log("result is " + result + " size ");
         if (result) {
@@ -268,7 +270,7 @@ router.post('/checkin',auth.auth,function(req,res){
                     }
                     else {
                         if (result[0].waiting >= 0 && (result[0].Status == 'Checkin' || result[0].Status == 'Available')) {
-                            Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Reserved'}})
+                            Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Reserved',currentUser:id, userEmail: email , phone:phone}})
                             .then(result =>
                             {
                             }).catch(err =>{ 
@@ -315,10 +317,13 @@ else {
     res.status(500).json({
         error:"Reservation not found"});
 }
-}).catch(err =>{
-})
+}) .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
 });
-
 
 router.post('/scan',(req,res)=>{
 var buffer = fs.readFileSync('./images' + '/2.png');
@@ -337,18 +342,16 @@ Jimp.read(buffer, function(err, image) {
 });
 })
 
-
-router.post('/checkout',function(req,res){
+router.post('/checkout',function(req,res,next){
     const phone = req.body.phone;
     const table = req.body.table;
     var Status;
     var fphone;
-    // Reservation.find({table:table,Status:'Checked In'}).sort({requestedtime:1}).then(result=>{
-    //     fphone = result[0].phone;
-    // })
-    // const restaurantId = req.params.restaurantId;
-
-    Reservation.find({phone:phone,Status:'Checked In'}).then(result => {
+    var loadedOrder =[];
+    var loadedTable;
+    var ORDER =[];
+    Reservation.find({phone:phone,Status:'Checked In'})
+    .then(result => {
         console.log(result)
         if(result.length > 0){
             Status = result[0].Status;
@@ -358,7 +361,7 @@ router.post('/checkout',function(req,res){
                 Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished',waitingtime:waiting + " minutes"}})
                 .then(result =>{
                     res.status(200).json({
-                        message:"checkout successfully",
+                        message:"checkout successfully",  
                     });
                 }).catch(err =>{
                     res.status(500).json({error:err});
@@ -368,7 +371,7 @@ router.post('/checkout',function(req,res){
                 Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished'}})
                 .then(result =>{
                     res.status(200).json({
-                        message:"checkout successfully",
+                        message:"checkout successfully",                       
                     });
                 }).catch(err =>{
                     res.status(500).json({error:err});
@@ -387,30 +390,18 @@ router.post('/checkout',function(req,res){
                 ftime =  Math.round(75 - ((new Date().getTime() - result[0].checkintime)/3600000)*60);
             }
             console.log("ftime is " + ftime);
-            Table.find({table:table}).then( result=>{
+            Table.find({phone:phone}).then( result=>{
                 console.log(" Table is " + result);
                 available = result[0].availableTime - 1000 * 60 * (ftime);
                 console.log(available);
                 if (result[0].waiting > 0 && Status == 'Checked In' || (result[0].Status != 'Reserved' && Status !='Checked In' && fphone==phone && result[0].waiting !=1)){
                     console.log("check in is " + 'First Checked In')
-                    Order.findOne({table})
-                    .then(result=>{
-                        if(!table)
-                        {
-                            res.status(200).json({
-                                message:"table not found",
-                            });
-                        }
-                        else{
-                            return Order.updateOne({paymentstatus:'Done'})
-                        }
-                    })
-                    Table.updateOne({table:table},{$set:{Status:'Checkin',availableTime:available,waiting:result[0].waiting}})
+                    Table.updateOne({phone:phone},{$set:{Status:'Checkin',availableTime:available,waiting:result[0].waiting}})
                     .then(result =>{
                         alertUser(table);
                         thanksUser(phone);
                         res.status(200).json({
-                            message:"checkout successfully",
+                            message:"checkout successfully", 
                         });
                     }).catch(err =>{
                         res.status(500).json({error:err});
@@ -418,19 +409,7 @@ router.post('/checkout',function(req,res){
                 } 
                 else if(result[0].waiting == 1 && Status != 'Checked In'){
                     console.log("check in is " + 'last Checked In')
-                    Order.findOne({table})
-                    .then(result=>{
-                        if(!table)
-                        {
-                            res.status(200).json({
-                                message:"table not found",
-                            });
-                        }
-                        else{
-                            return Order.updateOne({paymentstatus:'Done'})
-                        }
-                    })
-                    Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Available',availableTime:null}})
+                    Table.updateOne({phone:phone},{$set:{waiting:result[0].waiting,Status:'Available',availableTime:null}})
                     .then(result =>{
                         thanksUser(phone);
                         res.status(200).json({
@@ -442,19 +421,7 @@ router.post('/checkout',function(req,res){
                 }
                 else if(result[0].waiting > 0 && Status != 'Checked In'){
                     console.log("check in is " + 'Checked In')
-                    Order.findOne({table})
-                    .then(result=>{
-                        if(!table)
-                        {
-                            res.status(200).json({
-                                message:"table not found",
-                            });
-                        }
-                        else{
-                            return Order.updateOne({paymentstatus:'Done'})
-                        }
-                    })
-                    Table.updateOne({table:table},{$set:{waiting:result[0].waiting,availableTime:available}})
+                    Table.updateOne({phone:phone},{$set:{waiting:result[0].waiting,availableTime:available}})
                     .then(result =>{
                         thanksUser(phone);
                         res.status(200).json({
@@ -465,27 +432,18 @@ router.post('/checkout',function(req,res){
                     })
                 }
                 else {
-                    Order.findOne({table})
-                    .then(result=>{
-                        if(!table)
-                        {
-                            res.status(200).json({
-                                message:"table not found",
-                            });
-                        }
-                        else{
-                            return Order.updateOne({paymentstatus:'Done'})
-                        }
-                    })
-                    Table.updateOne({table:table},{$set:{Status:'Available',availableTime:null}})
+                    Table.updateOne({phone:phone},{$set:{Status:'Available',availableTime:null, currentUser:null , userEmail:null , phone:null , orders:[]}})
                     .then(result =>{
                         thanksUser(phone);
-                        res.status(200).json({
+                        return res.status(200).json({
                             message:"checkout successfull",
                         });
-                    }).catch(err =>{
-                        res.status(500).json(err);
-                    })
+                    }).catch(err => {
+                        if (!err.statusCode) {
+                          err.statusCode = 500;
+                        }
+                        next(err);
+                      })
                 }
                 })
         }

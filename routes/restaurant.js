@@ -29,25 +29,41 @@ router.post('/addresto',(req,res,next) =>{
 
 
 router.get('/validity/:restaurantId',(req,res,next) =>{
-    const restaurantId = req.params.restaurantId
-    Restaurant.aggregate([
-        { $project: {
-          difference: {
-            $divide: [
-              {           
-              $subtract: ["$expireAt", "$created_At"] },
-              60 * 60 * 24 * 1000
-            ]
-          }
-        }},
-        { $group: {
-          _id: "$restaurantId",
-          totalDifference: { $sum: "$difference" }
-        }},
-      ])
-      .then(results => {
-        res.send({ daysleft: results[0].totalDifference,});
-    })
+    const restaurantId = req.params.restaurantId;
+    const date = Date.now();
+    // Restaurant.aggregate([
+    //     { $project: {
+    //       difference: {
+    //         $divide: [
+    //           {           
+    //           $subtract: ["$expireAt", `$date`  ] },
+    //           60 * 60 * 24 * 1000
+    //         ]
+    //       }
+    //     }},
+    //     { $group: {
+    //       _id: "$restaurantId",
+    //       totalDifference: { $sum: "$difference" }
+    //     }},
+    //   ])
+    //   .then(results => {
+    //     res.send({ daysleft: results[0].totalDifference,});
+    // })
+    var expire;
+    Restaurant.findById(restaurantId)
+        .then(restaurant=>{
+            if(!restaurant){
+                const error = new Error('There are no such restaurantts !!!');
+                error.statusCode = 404;
+                return res.status(404).json({message:'There are no such restaurants!!'})
+            }
+            else{
+                expire=restaurant.expireAt;
+                result = expire - date;
+                result1 = result/(60*60*24*1000)
+                return res.status(200).json({message:"Payment status is now set to pending for this restaurant", daysleft:result1});
+            }
+        })
     .catch(error => console.error(error))
 })
 
