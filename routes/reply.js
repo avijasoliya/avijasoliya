@@ -6,38 +6,33 @@ const Reply = require('../models/reply');
 // const All = require('../models/all')
 
 router.post('/reply/:complaintId',(req,res,next)=>{
-    // const title = req.body.title;
-    const message = req.body.message;
-      const complaintId = req.params.complaintId;
-      let loadedAll;
-      Complaint.findById(complaintId)
-      .then(complaint => {
-         if (!complaintId) {
-             const error = new Error('An complaint with this id could not be found');
-             error.statusCode = 401;
-             throw error;
-         } 
-         const reply = new Reply({
-            //  title: title,
-             message: message,
-             complaintId:complaintId,
-            //  userId:id
-         })
-         reply.save();
-         complaint.replyId.push(reply);
-         complaint.save();
-        //  loadedAll.complaints.push(complaint);
-        //  loadedAll.save();
-        //  console.log(loadedAll)
-         return res.status(200).json({message:'Thank you for your reply!..',reply:reply});
-     })
-     .catch(err => {
-         if (!err.statusCode) {
-             err.statusCode = 500;
-         }
-         next(err);
-     })
-  }
+  const message = req.body.message;
+    const complaintId = req.params.complaintId;
+    let loadedAll;
+    Complaint.findById(complaintId)
+    .then(complaint => {
+       if (!complaintId) {
+           const error = new Error('An complaint with this id could not be found');
+           error.statusCode = 401;
+           throw error;
+       } 
+       const reply = new Reply({
+           message: message,
+           complaintId:complaintId
+       })
+       reply.save();
+       complaint.replyId.push(reply);
+       complaint.status = "Done";
+       complaint.save();
+       return res.status(200).json({message:'Thank you for your reply!..',reply:reply});
+   })
+   .catch(err => {
+       if (!err.statusCode) {
+           err.statusCode = 500;
+       }
+       next(err);
+   })
+}
   )
 
   router.get('/replies/:replyId',(req, res, next) => {

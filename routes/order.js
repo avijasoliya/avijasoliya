@@ -190,6 +190,7 @@ router.put('/parcel/makeorder',auth.auth,(req,res,next) =>{
 router.post('/current',auth.auth, (req,res,next) =>{
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
+  var loadedOrder =[];
   Order.find({email}).populate({
     path: "items.product_id"
   }).populate({
@@ -201,17 +202,14 @@ router.post('/current',auth.auth, (req,res,next) =>{
     // console.log(order)
     order.forEach(order=>{
       // console.log(order)
-      if(order.OrderIs == "Pending"){
-        // console.log(order)
-        return res.status(200).json({message:"Here's your order",order:order})
+      if(order.OrderIs == "Pending" || order.OrderIs == "In Progress" || order.OrderIs == "Done"){
+        loadedOrder.push(order);
       }
-      else if(order.OrderIs == "In Progress"){
-        return res.status(200).json({message:"Here's your order",order:order})
-      }
-      else if(order.OrderIs == "Done"){
-        return res.status(200).json({message:"Here's your order",order:order})
-      }
+      // else{
+      //   return res.json({message:"Your order must have been delivered to you by now!"})
+      // }
     })
+    return res.json({message:"Here you go.." , orders:loadedOrder});
   })
   .catch(err => {
     if (!err.statusCode) {
@@ -787,6 +785,95 @@ router.get('/howlong/:orderId', (req,res,next) =>{
     }
     next(err);
   });
+});
+
+router.put('/acceptbycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
+  const orderId = req.params.orderId;
+  const itemId = req.params.itemId;
+  var date = Date.now();
+  Order.updateOne(
+    {
+      _id: orderId,
+      items: {$elemMatch: {'_id':itemId}}
+    },
+    { $set: { "items.$.progress" : "In Progress" ,"items.$.itemAcceptedAt" : `${date}`} }
+ ).then(order=>{
+  return res.status(200).json({message:"This item has been accepted!! "})  
+ })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+router.put('/donebycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
+  const orderId = req.params.orderId;
+  const itemId = req.params.itemId;
+  var date = Date.now();
+  Order.updateOne(
+    {
+      _id: orderId,
+      items: {$elemMatch: {'_id':itemId}}
+    },
+    { $set: { "items.$.progress" : "Done" ,"items.$.itemDoneAt" : `${date}`} }
+ ).then(order=>{
+  return res.status(200).json({message:"Done!! "})  
+ })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+router.put('/cancelbycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
+  const orderId = req.params.orderId;
+  const itemId = req.params.itemId;
+  var date = Date.now();
+  Order.updateOne(
+    {
+      _id: orderId,
+      items: {$elemMatch: {'_id':itemId}}
+    },
+    { $set: { "items.$.progress" : "Cancelled" } }
+ ).then(order=>{
+  return res.status(200).json({message:"Cancelled!! "})  
+ })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+router.get('/timeforitem/:orderId/:itemId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  const itemId = req.params.itemId;
+  var itemAcceptedAt;
+  var itemDoneAt;
+  Order.findOne({_id:orderId},{items: {$elemMatch: {_id:itemId}}})
+  .then(order =>{
+    if(!order){
+      const error = new Error("There are no such orders!!");
+      error.statusCode = 404;
+      throw error;
+    }
+   itemAcceptedAt = order.items[0].itemAcceptedAt;
+   itemDoneAt = order.items[0].itemDoneAt;
+   result = itemDoneAt - itemAcceptedAt;
+   result1 = (result / 60000);
+   return res.json({message:"The time it took to make this item was...", time:result1})
+  })
 });
 
 module.exports = router;

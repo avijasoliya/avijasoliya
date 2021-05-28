@@ -22,11 +22,11 @@ const complaintSchema = new Schema(
             type:Schema.Types.ObjectId,
             ref:'Reply'
         }],
-        // replies:[{
-        //     type:Schema.Types.ObjectId,
-        //     ref:'Reply'
-        // }]
-    },{timestamps: { createdAt: 'created_At', updatedAt: 'updated_At', expireAt:'expired_at' }}
+        status:{
+            type:String,
+            default:"Pending"
+        }
+    }
 )
 
 module.exports = mongoose.model('Complaint',complaintSchema)

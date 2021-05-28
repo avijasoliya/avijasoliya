@@ -19,7 +19,7 @@ router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
       return  Order.findById(orderId)
     })  
     .then(order => {
-       if (!orderId) {
+       if (!order) {
            const error = new Error('An order with this id could not be found');
            error.statusCode = 401;
            throw error;
@@ -36,7 +36,7 @@ router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
        loadedAll.complaints.push(complaint);
        loadedAll.save();
       //  console.log(loadedAll)
-       return res.status(200).json({message:'Thank you for your complaint!..',complaint:complaint});
+       return res.status(200).json({message:'complaint saved!',complaint:complaint});
    })
    .catch(err => {
        if (!err.statusCode) {
@@ -44,8 +44,7 @@ router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
        }
        next(err);
    })
-}
-)
+})
 
 router.post('/waiter/complaint/:orderId',auth.auth,(req,res,next)=>{
   const title = req.body.title;
@@ -91,35 +90,24 @@ router.post('/waiter/complaint/:orderId',auth.auth,(req,res,next)=>{
 
 router.post('/reply/:complaintId',auth.auth,(req,res,next)=>{
   const message = req.body.message;
-    const orderId = req.params.orderId;
+    const complaintId = req.params.complaintId;
     let loadedAll;
-    let token = req.headers['authorization'];
-    token = token.split(' ')[1];
-    All.findById(id)
-    .then(all=>{
-      // console.log(all);
-      loadedAll  = all;
-      return  Order.findById(orderId)
-    })  
-    .then(order => {
-       if (!orderId) {
-           const error = new Error('An order with this id could not be found');
+    Complaint.findById(complaintId)
+    .then(complaint => {
+       if (!complaintId) {
+           const error = new Error('An complaint with this id could not be found');
            error.statusCode = 401;
            throw error;
        } 
-       const complaint = new Complaint({
-           title: title,
+       const reply = new Reply({
            message: message,
-           orderId:orderId,
-           userId:id
+           complaintId:complaintId
        })
+       reply.save();
+       complaint.replyId.push(reply);
+       complaint.status = "Done";
        complaint.save();
-       order.complaints.push(complaint);
-       order.save();
-       loadedAll.complaints.push(complaint);
-       loadedAll.save();
-      //  console.log(loadedAll)
-       return res.status(200).json({message:'complaint saved!',complaint:complaint});
+       return res.status(200).json({message:'Thank you for your reply!..',reply:reply});
    })
    .catch(err => {
        if (!err.statusCode) {
@@ -127,8 +115,7 @@ router.post('/reply/:complaintId',auth.auth,(req,res,next)=>{
        }
        next(err);
    })
-}
-)
+})
 
 
 router.get('/complaints', (req, res, next) => {
