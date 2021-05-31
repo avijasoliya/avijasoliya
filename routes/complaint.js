@@ -147,6 +147,30 @@ router.get('/complaints', (req, res, next) => {
 });
 
 
+router.put('/delete/:complaintId',(req,res,next) =>{
+  const complaintId = req.params.complaintId;
+
+  Complaint.findById(complaintId)
+  .then(complaint =>{
+    if(!complaint){
+      const error = new Error('There are no such complaints!!!');
+      error.statusCode = 404;
+      throw error
+    }
+    else{
+      complaint.status = "Done";
+      complaint.save();
+      return res.json({message:"Deleted!!", complaint:complaint})
+    }
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+})
+
 router.get('/complaint/:complaintId',(req, res, next) => {
   const complaintId = req.params.complaintId;
   Complaint.findById(complaintId).populate({path:"userId"}).populate({path:"orderId"})

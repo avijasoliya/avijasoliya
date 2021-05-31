@@ -10,13 +10,10 @@ var ItemSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
   },
+  
   ingredientId:{
     type:Schema.Types.ObjectId,
     ref:'Ingredient'
-  },
-  paymentstatus:{
-    type: String,
-    default:'Pending'
   },
   categoryId:{
     type:String,
@@ -75,16 +72,25 @@ const OrderSchema = new Schema({
         'The value of path {PATH} ({VALUE}) is not a valid email address.'
       ]
     },
-    table:{
-      type:String,
-    },
-    allId:{
+    phone:{
+      type: String,
+      validate: {
+          validator: function(v) {
+          return /\d{3}\d{3}\d{4}/.test(v);
+          },
+          message: props => `${props.value} is not a valid phone number!`
+      }},
+      orderType:{
+        type:String,
+        default:'OnTable'
+      },
+      PaymentStatus:{
+        type:String,
+        default:'Pending'
+      },
+    userId:{
       type:Schema.Types.ObjectId,
-      ref:'All'
-    },
-    tableId:{
-      type:Schema.Types.ObjectId,
-      ref:'Table'
+      ref:'User'
     },
     grandTotal: {
       default: 0,
@@ -98,10 +104,6 @@ const OrderSchema = new Schema({
   OrderIs:{
     type:String,
     default:'Pending'
-  },
-  orderType:{
-    type:String,
-    default:'OnTable'
   },
   OrderReceivedAt:{
     type:Date

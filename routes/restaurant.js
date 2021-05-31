@@ -190,11 +190,11 @@ router.get('/getrestaurants',(req,res,next) =>{
     const CurrentPage = req.query.page || 1;
     const perPage = 10;
     let totalRestaurants;
-    Restaurant.find({activity:activity})
+    Restaurant.find()
     .countDocuments()
     .then(count => {
       totalRestaurants = count;
-      return Restaurant.find({activity:activity})
+      return Restaurant.find()
         .skip((CurrentPage - 1) * perPage)
         .limit(perPage)
     })
@@ -218,9 +218,8 @@ router.get('/getrestaurants',(req,res,next) =>{
 });
 
 router.get('/totalrestaurants',(req,res,next) =>{
-    const activity = req.body.activity;
     const CurrentPage = req.query.page || 1;
-    const perPage = 10;
+    const perPage = 20;
     let totalRestaurants;
     Restaurant.find()
     .countDocuments()
@@ -232,10 +231,7 @@ router.get('/totalrestaurants',(req,res,next) =>{
     })
         .then(restaurant=>{
             if(!restaurant){
-                return res.status(404).json({message:"There are no person!!"});
-            }
-            else if(activity == ""){
-                return res.status(404).json({message:"There are no Restauurants with this kinda activity"});
+                return res.status(404).json({message:"There are no restaurants!!"});
             }
             else{
                 return res.status(200).json({message:"Here is the list you asked for..", list:restaurant, totalRestaurants : totalRestaurants});

@@ -787,9 +787,8 @@ router.get('/howlong/:orderId', (req,res,next) =>{
   });
 });
 
-router.put('/acceptbycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
-  let token = req.headers['authorization'];
-  token = token.split(' ')[1];
+router.put('/acceptbycatid/:orderId/:itemId',(req,res,next) =>{
+ 
   const orderId = req.params.orderId;
   const itemId = req.params.itemId;
   var date = Date.now();
@@ -810,9 +809,8 @@ router.put('/acceptbycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
   });
 });
 
-router.put('/donebycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
-  let token = req.headers['authorization'];
-  token = token.split(' ')[1];
+router.put('/donebycatid/:orderId/:itemId',(req,res,next) =>{
+  
   const orderId = req.params.orderId;
   const itemId = req.params.itemId;
   var date = Date.now();
@@ -833,9 +831,7 @@ router.put('/donebycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
   });
 });
 
-router.put('/cancelbycatid/:orderId/:itemId',auth.auth,(req,res,next) =>{
-  let token = req.headers['authorization'];
-  token = token.split(' ')[1];
+router.put('/cancelbycatid/:orderId/:itemId',(req,res,next) =>{
   const orderId = req.params.orderId;
   const itemId = req.params.itemId;
   var date = Date.now();
@@ -874,6 +870,66 @@ router.get('/timeforitem/:orderId/:itemId',(req,res,next) =>{
    result1 = (result / 60000);
    return res.json({message:"The time it took to make this item was...", time:result1})
   })
+});
+
+router.put('/donepayment/:orderId',(req,res,next) =>{
+  const orderId = req.params.orderId;
+  Order.findById(orderId)
+  .then(order =>{
+    if(!order){
+      const error = new Error('There are no such orders!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      order.PaymentStatus = "Done";
+      order.save();
+      return res.status(200).json({message:"Payment's done!", result:order})
+    }
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+});
+
+router.get('/parcelorders',(req, res, next) => {
+  const CurrentPage = req.query.page || 1;
+  const perPage = 20;
+  let totalOrders;
+  Order.find().populate({
+    path: "items.product_id"
+  }).populate({
+    path: "items.ingredientId"
+  }).populate({
+    path: "items.categoryId"
+  })
+    .countDocuments()
+    .then(count => {
+      totalOrders = count;
+      return Order.find({orderType:'Parcel'}).populate({path:"items",populate:{
+        path: "product_id"
+      }
+    })
+        .skip((CurrentPage - 1) * perPage)
+        .limit(perPage)
+    })
+    .then(orders => {
+      res.status(200)
+        .json({
+          message: 'Fetched orders Successfully',
+          orders: orders,
+          totalOrders: totalOrders
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });  
 });
 
 module.exports = router;
