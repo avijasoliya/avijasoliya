@@ -5,6 +5,7 @@ const Cart = require('../models/cart');
 const Product = require('../models/menu');
 // const User = require('../models/user');
 const All = require('../models/all');
+const all =require('../models/all')
 const auth = require('../middleware/is-auth');
 const router = express.Router();
 const Ingredient = require('../models/ingredients');
@@ -253,8 +254,8 @@ else {
 } 
 })
 
-router.post('/waiter/addtocart/:product_id/:ingredientId?',exports.WaiterCart =  (req, res, next) => {
-  const email = req.body.email;
+router.post('/waiter/addtocart/:product_id/:ingredientId?',(req, res, next) => {
+  const phone = req.body.phone;
   const product_id = req.params.product_id;
   const ingredientId = req.params.ingredientId;
   const qty = Number.parseInt(req.body.qty);
@@ -273,13 +274,13 @@ router.post('/waiter/addtocart/:product_id/:ingredientId?',exports.WaiterCart = 
       Id = product._id;
       CatId = product.categoryId;
       productDetails = product.offerPrice;
-      return All.findOne({email})
+      return All.findOne({phone})
     })    
     .then(all=>{
       if(!all){
         return res.status(403).json({message:'Register yourself first,will ya?!'})
       }
-      return Cart.findOne({ email })
+      return Cart.findOne({ phone })
     })
     .then(cart => {
       if (!cart && qty <= 0) {
@@ -333,7 +334,7 @@ router.post('/waiter/addtocart/:product_id/:ingredientId?',exports.WaiterCart = 
         })
       } else {
         const cartData = {
-          email: email,
+          phone: phone,
           items: [
             {
               product_id: product_id,
@@ -388,13 +389,13 @@ else {
       return res.status(404).json({ message: "Could not find ingredient" });
     }
     Ingprice = ingredient.price;
-    return All.findOne({email})
+    return All.findOne({phone})
   })
   .then(all=>{
     if(!all){
       return res.status(403).json({message:'Register yourself first,will ya?!'})
     }
-    return Cart.findOne({ email })
+    return Cart.findOne({ phone })
   })
   .then(cart => {
     if (!cart && qty <= 0) {
@@ -453,7 +454,7 @@ else {
       })
     } else {
       const cartData = {
-        email: email,
+        phone: phone,
         items: [
           {
             product_id: product_id,

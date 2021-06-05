@@ -64,7 +64,7 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
   });
 });
 
-router.put('/waiter/makeorder',(req,res,next) =>{
+router.put('/waiter/makeorder', (req,res,next) =>{
   const email = req.body.email;
   const phone = req.body.phone;
   const name = req.body.name;
@@ -72,18 +72,6 @@ router.put('/waiter/makeorder',(req,res,next) =>{
   const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
   var loadedUser;
-  Table.findOne({table})
-  .then(table=>{
-    if(!table){
-      const error = new Error('There are no such table!!');
-      error.statusCode = 404;
-      throw error;
-    }
-    else{
-      loadedTable = table;
-      return Table.findOne({table})
-    }
-  })
   All.findOne({email})
   .then(all=>{
     if(!all){
@@ -106,18 +94,16 @@ router.put('/waiter/makeorder',(req,res,next) =>{
       subTotal = cart.subTotal;
       const order = new Order({
         name : name,
+        table:table,
         paymentMethod: paymentMethod,
         email:email,
         grandTotal: subTotal,
-        items: loadedCart,
-        table: table
+        // userId:id,
+        items: loadedCart
     })
-    order.save();
+    order.save();      
     loadedUser.orders.push(order);
     loadedUser.save();    
-    loadedTable.orders.push(order);
-    loadedTable.save();
-    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })

@@ -43,6 +43,7 @@ router.post('/create/:categoryId',(req, res, next) => {
   const description = req.body.description;
   const imageUrl = req.file.path;
   let loadedcategory;
+  let loadedName;
   const originalPrice = req.body.originalPrice;
 
     Category.findById(req.params.categoryId)
@@ -51,13 +52,15 @@ router.post('/create/:categoryId',(req, res, next) => {
         const error = new Error("product not found")
         throw error;
       }
+      loadedName = category.categoryName;
       const product = new Product({
         categoryId : categoryId,
         name:name,
+        categoryName : loadedName,
         description:description,
         originalPrice:originalPrice,
         offerPrice:originalPrice,
-        imageUrl: `http://localhost:8020/${imageUrl}`,
+        imageUrl: `http://192.168.0.4:8080/${imageUrl}`,
       })
       product.save();
       loadedCategory = category
