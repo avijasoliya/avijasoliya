@@ -34,15 +34,13 @@ router.post('/reservation',auth.auth,function(req,res){
                    
                 });
                 newcustomer = reservation
-                sendMessage(reservation,req,res);
-            })
-            .catch(err => {
-                res.status(500).json(err);
             })
         }
         else {
             res.status(500).json({error:'Reservation with this Number already exists!!!! Please use a different number'});
         }
+    }).catch(err => {
+        res.status(500).json(err);
     })
  });
 
@@ -202,22 +200,6 @@ Table.findById(tableId)
     });
 });
 
-// router.get('/scan',(req,res,next)=>{    
-//     var buffer = fs.readFileSync(__dirname + '11.png');
-//     Jimp.read(buffer, function(err, image) {
-//         if (err) {
-//             console.error(err);
-//         }
-//         let QRCode = new qrCode();
-//         QRCode.callback = function(err, value) {
-//             if (err) {
-//                 console.error(err);
-//             }
-//             console.log(value.result);
-//         };
-//         QRCode.decode(image.bitmap);
-//     });
-// })
 
 
 router.post('/checkin',auth.auth,function(req,res,next){
@@ -233,7 +215,6 @@ router.post('/checkin',auth.auth,function(req,res,next){
             if (err) {
                 console.error(err);
             }
-            console.log(value.result);
         };
         qrcode.decode(image.bitmap);
     });
@@ -255,22 +236,17 @@ router.post('/checkin',auth.auth,function(req,res,next){
     })
     
    .then(result =>{
-        console.log(" result is " + result);
-        console.log("result is " + result + " size ");
         if (result) {
             Reservation.find({phone:phone,Status:'Finished'}).then(result =>{
                 requestedtime = new Date(result[0].requestedtime);
-                console.log("requested time is " +requestedtime);
-                console.log("current time is " +new Date().getTime());
                 var waiting=  Math.round(((requestedtime.getTime() - new Date().getTime())/3600000)*-60)
-                console.log("waiting is " +waiting);
                 Table.find({"table":table}).then(result => {
                     if (result.length == 0) {
                         res.status(500).json({error:" Wrong table"});
                     }
                     else {
                         if (result[0].waiting >= 0 && (result[0].Status == 'Checkin' || result[0].Status == 'Available')) {
-                            Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Reserved',currentUser:id, userEmail: email , phone:phone}})
+                            Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Reserved',currentUser:id, userEmail: email , phone:phone , userName:name}})
                             .then(result =>
                             {
                             }).catch(err =>{ 
@@ -352,7 +328,6 @@ router.post('/checkout',function(req,res,next){
     var ORDER =[];
     Reservation.find({phone:phone,Status:'Checked In'})
     .then(result => {
-        console.log(result)
         if(result.length > 0){
             Status = result[0].Status;
             if (result[0].checkintime == null)
@@ -391,15 +366,10 @@ router.post('/checkout',function(req,res,next){
             }
             console.log("ftime is " + ftime);
             Table.find({phone:phone}).then( result=>{
-                console.log(" Table is " + result);
                 available = result[0].availableTime - 1000 * 60 * (ftime);
-                console.log(available);
                 if (result[0].waiting > 0 && Status == 'Checked In' || (result[0].Status != 'Reserved' && Status !='Checked In' && fphone==phone && result[0].waiting !=1)){
-                    console.log("check in is " + 'First Checked In')
                     Table.updateOne({phone:phone},{$set:{Status:'Checkin',availableTime:available,waiting:result[0].waiting}})
                     .then(result =>{
-                        alertUser(table);
-                        thanksUser(phone);
                         res.status(200).json({
                             message:"checkout successfully", 
                         });
@@ -408,10 +378,8 @@ router.post('/checkout',function(req,res,next){
                     })
                 } 
                 else if(result[0].waiting == 1 && Status != 'Checked In'){
-                    console.log("check in is " + 'last Checked In')
                     Table.updateOne({phone:phone},{$set:{waiting:result[0].waiting,Status:'Available',availableTime:null}})
                     .then(result =>{
-                        thanksUser(phone);
                         res.status(200).json({
                             message:"checkout successfull",
                         });
@@ -420,10 +388,8 @@ router.post('/checkout',function(req,res,next){
                     })
                 }
                 else if(result[0].waiting > 0 && Status != 'Checked In'){
-                    console.log("check in is " + 'Checked In')
                     Table.updateOne({phone:phone},{$set:{waiting:result[0].waiting,availableTime:available}})
                     .then(result =>{
-                        thanksUser(phone);
                         res.status(200).json({
                             message:"checkout successfull",
                         });
@@ -432,9 +398,8 @@ router.post('/checkout',function(req,res,next){
                     })
                 }
                 else {
-                    Table.updateOne({phone:phone},{$set:{Status:'Available',availableTime:null, currentUser:null , userEmail:null , phone:null , orders:[]}})
+                    Table.updateOne({phone:phone},{$set:{Status:'Available',availableTime:null, currentUser:null ,userName:null, userEmail:null , phone:null , orders:[]}})
                     .then(result =>{
-                        thanksUser(phone);
                         return res.status(200).json({
                             message:"checkout successfull",
                         });

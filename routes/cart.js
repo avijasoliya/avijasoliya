@@ -235,8 +235,9 @@ else {
           path: "items.ingredientId"
         }).populate({
           path: "items.categoryId"
-        }).exec((err,cart)=> {
-      return res.json({
+        })
+        .exec((err,cart)=> {
+          return res.json({
                   status: 'success',
                   message: "product added in cart successfully",
                   cart:cart

@@ -64,14 +64,15 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
   });
 });
 
-router.put('/waiter/makeorder', (req,res,next) =>{
-  const email = req.body.email;
-  const phone = req.body.phone;
+router.put('/waiter/makeorder',auth.auth,(req,res,next) =>{
   const name = req.body.name;
-  const table = req.body.table;
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
   var loadedUser;
+  var loadedTable;
+
   All.findOne({email})
   .then(all=>{
     if(!all){
@@ -81,7 +82,7 @@ router.put('/waiter/makeorder', (req,res,next) =>{
     }
     else{
       loadedUser = all;
-      return Cart.findOne({email})
+     return Cart.findOne({email})
     }
   })    
   .then(cart=>{
@@ -94,22 +95,21 @@ router.put('/waiter/makeorder', (req,res,next) =>{
       subTotal = cart.subTotal;
       const order = new Order({
         name : name,
-        table:table,
         paymentMethod: paymentMethod,
         email:email,
+        phone:phone,
         grandTotal: subTotal,
-        // userId:id,
+        userId:id,
         items: loadedCart
     })
     order.save();      
     loadedUser.orders.push(order);
-    loadedUser.save();    
+    loadedUser.save();
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })
   .then(cart=>{
     cart.remove();
-    
   })
   .catch(err => {
     if (!err.statusCode) {

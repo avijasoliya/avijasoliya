@@ -16,7 +16,8 @@ const tableSchema = new Schema({
         ref:'Order'
     }],
     userEmail:String,
-    phone:String
+    phone:String,
+    userName:String
 
 });
 

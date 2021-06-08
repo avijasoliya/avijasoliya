@@ -46,12 +46,23 @@ var ItemSchema = new Schema({
 const CartSchema = new Schema({
   email: {
     type: String,
-    required: true,
+    // required: true,
     match: [
       /[\w]+?@[\w]+?\.[a-z]{2,4}/,
       'The value of path {PATH} ({VALUE}) is not a valid email address.'
     ]
   },
+  phone:{
+    type: String,
+    required: true,
+    validate: {
+        validator: function(v) {
+        return /\d{3}\d{3}\d{4}/.test(v);
+        },
+        message: props => `${props.value} is not a valid phone number!`
+    },
+    // required: [traue, 'User phone number required']
+},
   items: [ItemSchema],
   subTotal: {
             default: 0,
