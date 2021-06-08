@@ -18,6 +18,8 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
   const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
   var loadedUser;
+  var loadedTable;
+
   All.findOne({email})
   .then(all=>{
     if(!all){
@@ -27,8 +29,19 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
     }
     else{
       loadedUser = all;
-      return Cart.findOne({email})
-    } 
+      return Table.findOne({userEmail:email})        
+    }      
+  })
+  .then(table=>{
+    if(!table){
+      const error = new Error('Could not find a Table to push the order!!');
+        error.statusCode = 404;
+        throw error;
+    }
+    else{
+     loadedTable = table;
+     return Cart.findOne({email})
+    }
   })    
   .then(cart=>{
       if(!cart){
@@ -42,20 +55,29 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
         name : name,
         paymentMethod: paymentMethod,
         email:email,
+        phone:phone,
         grandTotal: subTotal,
         userId:id,
         items: loadedCart
     })
     order.save();      
     loadedUser.orders.push(order);
-    loadedUser.save();    
+    loadedUser.save();
+    loadedTable.orders.push(order);
+    loadedTable.save();
+    
+    // console.log(loadedUser)
+    
+    
     res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
+    
   })
   .then(cart=>{
     cart.remove();
-    
+    return 
   })
+  
   .catch(err => {
     if (!err.statusCode) {
       err.statusCode = 500;

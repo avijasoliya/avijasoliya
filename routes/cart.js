@@ -237,7 +237,7 @@ else {
           path: "items.categoryId"
         })
         .exec((err,cart)=> {
-          return res.json({
+      return res.json({
                   status: 'success',
                   message: "product added in cart successfully",
                   cart:cart
@@ -253,7 +253,7 @@ else {
     next(err);
   });
 } 
-})
+});
 
 router.post('/waiter/addtocart/:product_id/:ingredientId?',(req, res, next) => {
   const phone = req.body.phone;
