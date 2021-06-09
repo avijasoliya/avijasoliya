@@ -46,6 +46,7 @@ router.post('/reservation',auth.auth,function(req,res){
 
 router.set("view engine","ejs");
 
+
 router.post('/table',function(req,res){
     // const restaurantId = req.params.restaurantId;
     Table.find({table:req.body.table}).then(result => {
@@ -102,7 +103,7 @@ router.get('/tables',(req, res, next) => {
          next(err);
        });
    
-   });
+});
 
 router.delete('/delete/:tableId', (req, res, next) => {
     // const restaurantId = req.params.restaurantId;
@@ -127,7 +128,7 @@ router.delete('/delete/:tableId', (req, res, next) => {
         }
         next(err);
       });
-  });     
+});     
 
 router.get('/reservations',function(req,res){
     // const restaurantId = req.params.restaurantId;
@@ -166,7 +167,7 @@ router.delete('/deleter/:reservationId', (req, res, next) => {
         }
         next(err);
       });
-  });     
+});     
 
 router.put('/update/:tableId',(req, res, next) => {
 const tableId = req.params.tableId;
@@ -199,8 +200,6 @@ Table.findById(tableId)
     next(err);
     });
 });
-
-
 
 router.post('/checkin',auth.auth,function(req,res,next){
     let token = req.headers['authorization'];
@@ -333,7 +332,7 @@ router.post('/checkout',function(req,res,next){
             if (result[0].checkintime == null)
             {
                 var waiting = Math.round(((new Date().getTime() - result[0].requestedtime)/3600000)*60);
-                Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished',waitingtime:waiting + " minutes"}})
+                Reservation.deleteOne()
                 .then(result =>{
                     res.status(200).json({
                         message:"checkout successfully",  
@@ -343,7 +342,7 @@ router.post('/checkout',function(req,res,next){
                 })
             }
             else {
-                Reservation.updateOne({'phone':phone,'Status':{'$ne':'Finished'}},{$set:{checkouttime:new Date(), Status:'Finished'}})
+                Reservation.deleteOne()
                 .then(result =>{
                     res.status(200).json({
                         message:"checkout successfully",                       
@@ -417,8 +416,5 @@ router.post('/checkout',function(req,res,next){
         }
     })
 })
-
-
-
 
 module.exports = router;
