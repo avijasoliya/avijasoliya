@@ -61,7 +61,7 @@ const OrderSchema = new Schema({
 
     name: {
       type: String,
-      required: true
+      // required: true
     },
     table:{type: String},
     email: {

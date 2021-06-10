@@ -12,7 +12,7 @@ const router = express.Router();
 
 
 router.put('/makeorder',auth.auth,(req,res,next) =>{
-  const name = req.body.name;
+  // const name = req.body.name;
   let token = req.headers['authorization'];
   token = token.split(' ')[1];
   const paymentMethod = req.body.paymentMethod;  
@@ -253,8 +253,8 @@ router.get('/getorder/:orderId', (req,res,next) =>{
 });
 
 router.get('/getorders',(req, res, next) => {
-  const CurrentPage = req.query.page || 1;
-  const perPage = 20;
+  // const CurrentPage = req.query.page || 1;
+  // const perPage = 20;
   let totalItems;
   Order.find().populate({
     path: "items.product_id"
@@ -270,8 +270,8 @@ router.get('/getorders',(req, res, next) => {
         path: "product_id"
       }
     })
-        .skip((CurrentPage - 1) * perPage)
-        .limit(perPage)
+        // .skip((CurrentPage - 1) * perPage)
+        // .limit(perPage)
     })
     .then(orders => {
       res.status(200)

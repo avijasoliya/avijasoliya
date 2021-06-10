@@ -11,6 +11,7 @@ const auth = require('../middleware/is-auth');
 
 router.post('/reservation',auth.auth,function(req,res){
     // const restaurantId = req.params.restaurantId;
+    const persons = req.body.persons;
     let token = req.headers['authorization'];
     token = token.split(' ')[1];
     console.log(name);
@@ -23,6 +24,7 @@ router.post('/reservation',auth.auth,function(req,res){
                 checkintime:null,
                 checkouttime:null,
                 name:name,
+                persons:persons,
                 table:null,
                 Status:'Finished',
             });

@@ -77,6 +77,32 @@ router.post('/reply/:complaintId',(req,res,next)=>{
       });
   });
 
-
+  router.get('/replies', (req, res, next) => {
+    // const CurrentPage = req.query.page || 1;
+    // const perPage = 10;
+    let totalItems;
+    Complaint.find()
+      .countDocuments()
+      .then(count => {
+        totalItems = count;
+        
+      })
+      Reply.find().populate({path:"complaintId"})
+      .then(replies => {
+        res.status(200)
+          .json({
+            message: 'Fetched replies Successfully',
+            replies: replies,
+            totalItems: totalItems
+          });
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  
+  });
 
   module.exports = router;

@@ -12,6 +12,7 @@ const allSchema = new Schema({
       },           
     phone:{
         type: String,
+        unique:true,
         validate: {
             validator: function(v) {
             return /\d{3}\d{3}\d{4}/.test(v);

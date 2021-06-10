@@ -4,6 +4,7 @@ const Complaint = require('../models/complaint');
 const Order = require('../models/order');
 const auth = require('../middleware/is-auth');
 const All = require('../models/all')
+const all = require('../models/all')
 
 router.post('/complaint/:orderId',auth.auth,(req,res,next)=>{
   const title = req.body.title;
@@ -187,19 +188,28 @@ router.get('/complaint/:complaintId',(req, res, next) => {
     });
 });
 
-
-router.get('/complaints/:userId',(req, res, next) => {
-  const userId = req.params.userId;
-  Complaint.findById(userId)
-    .then(complaints => {
-      res.status(200).json({ message: 'complaint fetched.', complaints: complaints });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+router.get('/complaintsuser',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
+  All.findOne({email}).populate({path:"complaints",populate:{
+    path: "complaint_id"
+  }
+})
+  .then(all=>{
+    if(!all){
+      const error = new Error('THere are no such persons!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    return res.status(200).json({message:"here you go..", data:all})
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
 });
+
 
 module.exports = router;

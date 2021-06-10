@@ -10,6 +10,7 @@ const reservationschema = new Schema({
     checkouttime:Date,
     Status:String,
     table:Number,
+    persons:String,
     restaurantId:{type:Schema.Types.ObjectId}
     });
 
