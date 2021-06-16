@@ -119,30 +119,36 @@ router.put('/update/:categoryId',(req, res, next) => {
   });
 
 router.delete('/delete/:categoryId',(req, res, next) => {
-    const categoryId = req.params.categoryId;
-    Category.findById(categoryId)
-      .then(category => {
-        if (!category) {
-          const error = new Error('Could not find post.');
-          error.statusCode = 404;
-          throw error;
-        }
-        clearImage(category.imageUrl);
-        return Category.findByIdAndDelete(categoryId);
+  const categoryId = req.params.categoryId;
+  var loadedPosts = [];
+  Category.findById(categoryId)
+    .then(category => {
+      if (!category) {
+        const error = new Error('Could not find post.');
+        error.statusCode = 404;
+        throw error;
+      }
+      clearImage(category.imageUrl);
+      category.remove()
+      return Product.find({categoryId})
+    })
+    .then(products =>{
+      loadedPosts = products;
+      loadedPosts.forEach(product =>{
+        product.remove();
       })
-      .then(result => {
-        console.log(result);
-        res.status(200).json({ message: 'category deleted!!' })
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  }
-  
-  );
+    })
+    .then(result => {
+      // console.log(result);
+      res.status(200).json({ message: 'category deleted!!' , deletedProducts : loadedPosts })
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+});
 
 const clearImage = filePath => {
   filePath = path.join(__dirname, '..', filePath);

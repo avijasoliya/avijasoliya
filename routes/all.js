@@ -181,7 +181,7 @@ router.delete('/delete/:allId',(req,res,next) =>{
 
 router.get('/geteveryone',(req,res,next) =>{
     const CurrentPage = req.query.page || 1;
-    const perPage = 100;
+    const perPage = 20;
     let totalPersons;
     All.find()
       .countDocuments()
@@ -414,6 +414,7 @@ router.delete('/delete/:allId',  (req, res, next) => {
   
 
 router.put('/update/:allId',(req,res,next) =>{
+    const email = req.body.email;
     const allId = req.params.allId;
     const phone = req.body.phone;
     const name = req.body.name;
@@ -428,9 +429,10 @@ router.put('/update/:allId',(req,res,next) =>{
             throw error;
         }
         else{
+            all.email = email;
             all.phone = phone;
             all.categoryid = categoryId;
-            // all.name = name;
+            all.name = name;
             all.save();
             return res.json({message:"Data of this person has been updated !", person:all})
         }

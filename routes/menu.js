@@ -80,7 +80,7 @@ router.post('/create/:categoryId',(req, res, next) => {
 
 router.get('/get/:productId',(req, res, next) => {
   const productId = req.params.productId;
-  Product.findById(productId)
+  Product.findById(productId).populate('ingredients')
     .then(product => {
       if (!product) {
         const error = new Error('Could not find product.');
@@ -213,7 +213,7 @@ router.get('/menu/:categoryId', (req, res, next)=> {
   const categoryId = req.params.categoryId;
   let loadedProduct;
 
-  Product.find({categoryId})
+  Product.find({categoryId}).populate('ingredients')
   .then(product => {
     console.log(product);
     if (product) {

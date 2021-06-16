@@ -145,7 +145,7 @@ router.get('/complaints', (req, res, next) => {
 });
 
 
-router.put('/delete/:complainId',(req,res,next) =>{
+router.put('/delete/:complaintId',(req,res,next) =>{
   const complaintId = req.params.complaintId;
 
   Complaint.findById(complaintId)

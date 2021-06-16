@@ -46,6 +46,45 @@ router.post('/reservation',auth.auth,function(req,res){
     })
  });
 
+router.post('/waiterreservation',function(req,res){
+    const persons = req.body.persons;
+    // let token = req.headers['authorization'];
+    // token = token.split(' ')[1];
+    const phone = req.body.phone;
+    const name = req.body.name;
+    console.log(name);
+    Reservation.findOne({phone}).then(result=>{
+        if (!result){
+            const reservation = new Reservation({
+            phone:phone,
+            requestedtime:new Date(),
+            waitingtime:null,
+            checkintime:null,
+            checkouttime:null,
+            name:name,
+            persons:persons,
+            table:null,
+            Status:'Finished',
+        });
+        reservation.save()
+        .then(result => { 
+            res.status(201).json({
+                message:"created successfully",
+                createdTable:reservation,
+                
+            });
+            newcustomer = reservation
+        })
+    }
+    else {
+        res.status(500).json({error:'Reservation with this Number already exists!!!! Please use a different number'});
+    }
+}).catch(err => {
+    res.status(500).json(err);
+})
+});
+
+
 router.set("view engine","ejs");
 
 
@@ -300,6 +339,81 @@ else {
     }
     next(err);
   });
+});
+
+router.post('/waitercheckin',function(req,res,next){
+    const email = req.body.email;
+    const phone = req.body.phone;
+    const table = req.body.table;
+    const name = req.body.name;
+    Table.findOne({table:table})
+    .then(table=>{
+        if(!table){
+          const error = new Error ("table not found")
+            error.statusCode = 401;
+            throw error;
+        }
+        else if(table){
+            console.log(table);
+            Table.findOne({"table":table})
+            .then(result => {
+                if (result.length == 0) {
+                        res.status(500).json({error:" Wrong table"});
+                    }
+                    else {
+                        if (result[0].waiting >= 0 && (result[0].Status == 'Checkin' || result[0].Status == 'Available')) {
+                            Table.updateOne({table:table},{$set:{waiting:result[0].waiting,Status:'Reserved',currentUser:id, userEmail: email , phone:phone , userName:name}})
+                            .then(result =>{
+                                res.json({message:"checkedin Successfully"})
+                            
+                            }).catch(err => {
+                                if (!err.statusCode) {
+                                  err.statusCode = 500;
+                                }
+                                next(err);
+                              });
+                        }   
+                        else if (result[0].waiting == 0 && result[0].Status == 'Checkin'){
+                            Table.updateOne({table:table},{$set:{Status:'Reserved'}})
+                            .then(result =>
+                            {
+                                res.json({message:"checkedin Successfully"})
+
+                            }).catch(err => {
+                                if (!err.statusCode) {
+                                  err.statusCode = 500;
+                                }
+                                next(err);
+                              });
+                        }
+                        else {
+                            res.status(500).json({
+                            error:"Table is not available"});
+                        }
+                    }
+                }).catch(err => {
+                    if (!err.statusCode) {
+                      err.statusCode = 500;
+                    }
+                    next(err);
+                  })
+                  .catch(err => {
+                    if (!err.statusCode) {
+                      err.statusCode = 500;
+                    }
+                    next(err);
+                  });
+        }
+        else {
+            res.status(500).json({
+            error:"Reservation not found"});
+        }
+    }).catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
 });
 
 router.post('/scan',(req,res)=>{
