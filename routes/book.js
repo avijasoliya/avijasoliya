@@ -46,47 +46,84 @@ router.post('/reservation',auth.auth,function(req,res){
     })
  });
 
-router.post('/waiterreservation',function(req,res){
+router.post('/waiterreservation',function(req,res,next){
+    // const errors = validationResult(req);
+    // if(!errors.isEmpty()){
+    //     const error = new Error('Validation Failed!');
+    //     error.statusCode = 422;
+    //     error.data = errors.array();
+    //     return res.status(500).json({message:"mmm...somthing seems wrong here!!  you sure,you added the right credentials?"})
+    // }
     const persons = req.body.persons;
-    // let token = req.headers['authorization'];
-    // token = token.split(' ')[1];
-    const phone = req.body.phone;
     const name = req.body.name;
-    console.log(name);
+    const phone = req.body.phone;
+    // console.log(name);
     Reservation.findOne({phone}).then(result=>{
         if (!result){
-            const reservation = new Reservation({
-            phone:phone,
-            requestedtime:new Date(),
-            waitingtime:null,
-            checkintime:null,
-            checkouttime:null,
-            name:name,
-            persons:persons,
-            table:null,
-            Status:'Finished',
-        });
-        reservation.save()
-        .then(result => { 
-            res.status(201).json({
-                message:"created successfully",
-                createdTable:reservation,
-                
+                const reservation = new Reservation({
+                phone:phone,
+                requestedtime:new Date(),
+                waitingtime:null,
+                checkintime:null,
+                checkouttime:null,
+                persons:persons,
+                status:"made_by_waiter",
+                name:name,
+                table:null,
+                Status:'Finished',
             });
-            newcustomer = reservation
+            reservation.save()
+            .then(result => { 
+                res.status(201).json({
+                    message:"created successfully",
+                    createdTable:reservation,
+                   
+                });
+                newcustomer = reservation
+                })          
+        }
+        else {
+            res.status(500).json({error:'Reservation with this Number already exists!!!! Please use a different number'});
+        }
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+                err.statusCode = 500;
+                return res.status(500).json({message:"mmm...somthing seems wrong here!!  you sure,you added the right credentials?"})
+            }
+            next(err);
         })
-    }
-    else {
-        res.status(500).json({error:'Reservation with this Number already exists!!!! Please use a different number'});
-    }
-}).catch(err => {
-    res.status(500).json(err);
-})
 });
 
+router.get('/reservationsbywaiter',(req,res,next) =>{
+    const CurrentPage = req.query.page || 1;
+    const perPage = 100;
+    let totalPersons;
+    Reservation.find()
+      .countDocuments()
+      .then(count => {
+        totalReservations = count;
+        return Reservation.find({status:"made_by_waiter"})
+          .skip((CurrentPage - 1) * perPage)
+          .limit(perPage)
+      })
+      .then(reservations => {
+        res.status(200)
+          .json({
+            message: 'Fetched everyone Successfully',
+            reservations: reservations,
+            totalReservations: totalReservations
+          });
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+ });
 
 router.set("view engine","ejs");
-
 
 router.post('/table',function(req,res){
     // const restaurantId = req.params.restaurantId;
@@ -532,5 +569,49 @@ router.post('/checkout',function(req,res,next){
         }
     })
 })
+
+router.post('/booktableforguest/:reservationId',(req,res,next) =>{
+    const reservationId = req.params.reservationId;
+    const email = req.body.email;
+    const table = req.body.table;
+    let loadedReservation;
+    Reservation.findById(reservationId)
+    .then(reservation =>{
+        if(!reservation){
+            const error = new Error('There are no such reservations');
+            error.statusCode = 404;
+            throw error;
+        }
+        else{
+            loadedReservation = reservation;
+            loadedReservation.Status = "Checked In";
+            loadedReservation.save();
+            return Table.findOne({table:table});
+            console.log(loadedReservation)
+        }
+    })
+    .then(table=>{
+        if(!table){
+            const error = new Error('There are no such tables');
+            error.statusCode = 404;
+            throw error;
+        }
+        else{
+            table.userName = loadedReservation.name;
+            table.phone = loadedReservation.phone;
+            table.userEmail = email;
+            table.Status = "Reserved";
+            table.save();
+            return res.json({message:"Table booked!!" , table:table})
+        }
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  
+  });
 
 module.exports = router;

@@ -539,24 +539,41 @@ router.delete('/delete',(req, res, next) => {
     });
 });
 
-router.get('/bycatid/:orderId',(req,res,next) =>{
+router.get('/bycatid/:orderId',auth.auth,(req,res,next) =>{
+  let token = req.headers['authorization'];
+  token = token.split(' ')[1];
   const orderId = req.params.orderId;
-  const categoryId = req.params.categoryId;
-  var products =[]; 
-  Order.findById(orderId)
-  .populate({
-    path: "items.product_id"
-  }).populate({
-    path: "items.ingredientId"
-  })
+  var products =[];
+  var loadedCategory;
+  All.findOne({email})
+  .then(all=>{
+    if(!all){
+      const error = new Error("There are no such persons!!");
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+        loadedCategory = all.categoryId;
+        return Order.findById(orderId)
+        .populate({
+          path: "items.product_id"
+        })
+        .populate({
+          path: "items.ingredientId"
+        })
+    }
+  })  
   .then(Order=>{
     if(!Order){
-      return res.status(404).json({message:"there are no such orders"})
-    }    
+      const error = new Error("There are no such orders!!");
+      error.statusCode = 404;
+      throw error;
+    } 
     products = Order.items;
-    // console.log(products)
-    const results = products.filter(item => item.categoryId === `${categoryId}`);
-    return res.status(200).json({message:"the item you need to make is :" , item: results})
+    const results = products.filter(item => 
+    item.categoryId === `${loadedCategory}`      
+        );
+        return res.status(200).json({message:"the item you need to make is :" , item: results})
   }) 
   .catch(err => {
     if (!err.statusCode) {

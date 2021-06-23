@@ -40,26 +40,25 @@ const allSchema = new Schema({
         ref : 'OTP'
         
     }],
-    resetToken:String,
-    resetTokenExpiration:Date,
+        resetToken:String,
+        resetTokenExpiration:Date,
     feedbacks:[{
         type: Schema.Types.ObjectId,
-        ref : 'FeedBack'
+        ref : 'Feedback'
     }],
-    
+    orders:[{
+        type:Schema.Types.ObjectId,
+        ref:'Order'
+    }],
     activerole:{
         type:String,
         required:true,
-        default:'All'
+        default:'user'
     },
     roles:{
         type:[String],
-        default:['All']
+        default:['user']
     },
-    orders:[{
-        type:Schema.Types.ObjectId,
-        ref :'Order'
-    }],
     categoryId:{
         type:Schema.Types.ObjectId,
         default:null

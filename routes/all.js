@@ -49,6 +49,25 @@ router.put('/register',(req, res, next) => {
         password: sha1        
     })
     return all.save()
+    // Restaurant.findById(restaurantId)
+    // .then(restaurant =>{
+    //     if(!restaurant){
+    //         const error = new Error('There are no such restaurants')
+    //         error.statusCode = 404;
+    //         throw error;
+    //     }
+    //     else{
+    //         const all = new All({
+    //             name: name,
+    //             email: email,
+    //             phone: phone,
+    //             activerole: activerole,
+    //             restaurantId:restaurantId,
+    //             password: sha1        
+    //         })
+    //         return all.save();
+    //         }       
+    // })
     .then(all=>{
         return res.status(201).json({ message: 'Registered sucessfully', Id: all._id });
     })
@@ -431,7 +450,7 @@ router.put('/update/:allId',(req,res,next) =>{
         else{
             all.email = email;
             all.phone = phone;
-            all.categoryid = categoryId;
+            all.categoryId = categoryId;
             all.name = name;
             all.save();
             return res.json({message:"Data of this person has been updated !", person:all})

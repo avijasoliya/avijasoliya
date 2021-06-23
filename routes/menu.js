@@ -139,7 +139,6 @@ router.put('/update/:productId',(req, res, next) => {
     });
 });
 
-
 router.put('/outdate/:productId',(req,res,next) =>{
   const productId = req.params.productId;
   Product.findById(productId)
@@ -208,7 +207,6 @@ router.get('/menu/name', async (req, res, next)=> {
     
 })
 
-
 router.get('/menu/:categoryId', (req, res, next)=> {
   const categoryId = req.params.categoryId;
   let loadedProduct;
@@ -233,7 +231,6 @@ router.get('/menu/:categoryId', (req, res, next)=> {
     });    
 })
 
-
 router.put('/available/:productId',(req,res,next) =>{
   const productId = req.params.productId;
   Product.findById(productId)
@@ -252,8 +249,6 @@ router.put('/available/:productId',(req,res,next) =>{
       next(err);
     });
 })
-
-
 
 router.put('/unavailable/:productId', (req,res,next) =>{
   const productId = req.params.productId;
@@ -274,7 +269,6 @@ router.put('/unavailable/:productId', (req,res,next) =>{
       next(err);
     });
 })
-
 
 router.put('/itemunavailable/:productId',(req,res,next) =>{
   const productId = req.params.productId;
