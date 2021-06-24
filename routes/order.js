@@ -86,10 +86,11 @@ router.put('/makeorder',auth.auth,(req,res,next) =>{
   });
 });
 
-router.put('/waiter/makeorder',auth.auth,(req,res,next) =>{
+router.put('/waiter/makeorder',(req,res,next) =>{
   const name = req.body.name;
-  let token = req.headers['authorization'];
-  token = token.split(' ')[1];
+  // let token = req.headers['authorization'];
+  // token = token.split(' ')[1];
+  const email = req.body.email;
   const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
   var loadedUser;
@@ -241,7 +242,7 @@ router.get('/getorder/:orderId', (req,res,next) =>{
       if(!order){
           return res.status(404).json({message:"please make an order first :)"})
       }
-      return res.status(200).json({message:"The order", order:order})
+      return res.status(200).json({message:"The order", order:[order]})
   })
   .catch(err => {
     if (!err.statusCode) {
@@ -465,7 +466,7 @@ router.put('/setdiscount/:orderId',(req,res,next) =>{
     const offer = (order.grandTotal)/100 * discount;
     order.grandTotal = order.grandTotal - offer ;
     order.save();
-    return res.status(200).json({message:"Sorry for the difficulties...here,let us help you with your order",order:order});
+    return res.status(200).json({message:"Sorry for the difficulties...here,let us help you with your order",order:[order]});
   })
   .catch(err => {
     if (!err.statusCode) {

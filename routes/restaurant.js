@@ -3,9 +3,6 @@ const router = express.Router();
 const Restaurant = require('../models/restaurant')
 const CronJob = require('cron').CronJob;
 
-
-
-
 router.post('/addresto',(req,res,next) =>{
     const RestaurantName = req.body.RestaurantName;
     let loadedRestaurant;
@@ -25,8 +22,6 @@ router.post('/addresto',(req,res,next) =>{
 
     return res.status(200).json({message:"Restaurant created!" , RestaurantId : resto._id,message:"restaurant is available for the moment can you choose another one", restaurnat:resto})
 });
-
-
 
 router.get('/validity/:restaurantId',(req,res,next) =>{
     const restaurantId = req.params.restaurantId;
@@ -66,7 +61,6 @@ router.get('/validity/:restaurantId',(req,res,next) =>{
         })
     .catch(error => console.error(error))
 })
-
 
 router.put('/pending/:restaurantId',(req,res,next) =>{
     const restaurantId = req.params.restaurantId;
@@ -114,7 +108,6 @@ router.put('/paymentdone/:restaurantId',(req,res,next) =>{
             next(err);
         })
 });
-
 
 router.put('/deactivate/:restaurantId',(req,res,next) =>{
     const restaurantId = req.params.restaurantId;
@@ -312,7 +305,6 @@ router.post('/makepayment/:restaurantId',(req,res,next) =>{
     })
 });
 
-
 router.put('/itemunavailable/:restaurantId',(req,res,next) =>{
     const restaurantId = req.params.restaurantId;
     let loadedRestaurant;
@@ -341,7 +333,5 @@ router.put('/itemunavailable/:restaurantId',(req,res,next) =>{
         next(err);
       });
   })
-
-
 
 module.exports = router;
