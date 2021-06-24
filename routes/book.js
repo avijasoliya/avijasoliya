@@ -572,7 +572,7 @@ router.post('/checkout',function(req,res,next){
 
 router.post('/booktableforguest/:reservationId',(req,res,next) =>{
     const reservationId = req.params.reservationId;
-    const email = req.body.email;
+    // const email = req.body.email;
     const table = req.body.table;
     let loadedReservation;
     Reservation.findById(reservationId)
@@ -599,7 +599,7 @@ router.post('/booktableforguest/:reservationId',(req,res,next) =>{
         else{
             table.userName = loadedReservation.name;
             table.phone = loadedReservation.phone;
-            table.userEmail = email;
+            // table.userEmail = email;
             table.Status = "Reserved";
             table.save();
             return res.json({message:"Table booked!!" , table:table})

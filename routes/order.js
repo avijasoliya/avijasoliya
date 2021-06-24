@@ -90,7 +90,7 @@ router.put('/waiter/makeorder',(req,res,next) =>{
   const name = req.body.name;
   // let token = req.headers['authorization'];
   // token = token.split(' ')[1];
-  const email = req.body.email;
+  const phone = req.body.phone;
   const paymentMethod = req.body.paymentMethod;  
   let loadedCart;
   var loadedUser;
@@ -105,9 +105,20 @@ router.put('/waiter/makeorder',(req,res,next) =>{
     }
     else{
       loadedUser = all;
+     return Table.findOne({phone})
+    }
+  })
+  .then(table=>{
+    if(!table){
+      const error = new Error('There are no such persons in that table!!');
+      error.statusCode = 404;
+      throw error;
+    }
+    else{
+      loadedTable = table;
      return Cart.findOne({email})
     }
-  })    
+  })        
   .then(cart=>{
       if(!cart){
         const error = new Error('Could not find Cart!!');
@@ -128,7 +139,9 @@ router.put('/waiter/makeorder',(req,res,next) =>{
     order.save();      
     loadedUser.orders.push(order);
     loadedUser.save();
-    res.status(200).json({ orderId:order._id, userDetails:order ,Order: loadedCart });
+    loadedTable.orders.push(order);
+    loadedTable.save();
+    res.status(200).json({message:"Order has been placed!!", orderId:order._id, userDetails:order ,Order: loadedCart });
     return Cart.findOneAndDelete({email})
   })
   .then(cart=>{
